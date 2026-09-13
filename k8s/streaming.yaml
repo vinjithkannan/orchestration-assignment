@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: streaming
+  namespace: streamingapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: streaming
+  template:
+    metadata:
+      labels:
+        app: streaming
+    spec:
+      containers:
+        - name: streaming
+          image: 508564775932.dkr.ecr.ap-south-1.amazonaws.com/streamingapp/streaming-service:1
+          imagePullPolicy: Always
+
+          ports:
+            - containerPort: 3002
+
+          env:
+            - name: NODE_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: streamingapp-config
+                  key: NODE_ENV
+                  
+            - name: MONGO_URI
+              value: "mongodb://mongodb:27017/streamingapp"
+
+            - name: MONGO_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: streamingapp-config
+                  key: MONGO_HOST
+
+            - name: MONGO_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: streamingapp-config
+                  key: MONGO_PORT
+
+            - name: MONGO_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: streamingapp-config
+                  key: MONGO_DATABASE
+
+            - name: MONGO_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: streamingapp-secret
+                  key: MONGO_USERNAME
+
+            - name: MONGO_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: streamingapp-secret
+                  key: MONGO_PASSWORD
+
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: streaming
+  namespace: streamingapp
+spec:
+  type: ClusterIP
+  selector:
+    app: streaming
+  ports:
+    - port: 3002
+      targetPort: 3002
+      protocol: TCP
+      

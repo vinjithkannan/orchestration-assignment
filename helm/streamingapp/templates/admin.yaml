@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.admin.name }}
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.admin.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.admin.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.admin.name }}
+    spec:
+      containers:
+        - name: {{ .Values.admin.name }}
+          image: "{{ .Values.imageRegistry }}/{{ .Values.admin.image.repository }}:{{ .Values.admin.image.tag }}"
+          imagePullPolicy: {{ .Values.admin.image.pullPolicy }}
+
+          ports:
+            - containerPort: {{ .Values.admin.containerPort }}
+
+          env:
+            - name: NODE_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.configMap.name }}
+                  key: NODE_ENV
+
+            - name: MONGO_URI
+              value: {{ .Values.admin.mongoUri | quote }}
+
+            - name: MONGO_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.configMap.name }}
+                  key: MONGO_HOST
+
+            - name: MONGO_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.configMap.name }}
+                  key: MONGO_PORT
+
+            - name: MONGO_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.configMap.name }}
+                  key: MONGO_DATABASE
+
+            - name: MONGO_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secret.name }}
+                  key: MONGO_USERNAME
+
+            - name: MONGO_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secret.name }}
+                  key: MONGO_PASSWORD
+
+          resources:
+            requests:
+              cpu: {{ .Values.admin.resources.requests.cpu | quote }}
+              memory: {{ .Values.admin.resources.requests.memory | quote }}
+            limits:
+              cpu: {{ .Values.admin.resources.limits.cpu | quote }}
+              memory: {{ .Values.admin.resources.limits.memory | quote }}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.admin.name }}
+  namespace: {{ .Values.namespace }}
+spec:
+  type: {{ .Values.admin.service.type }}
+  selector:
+    app: {{ .Values.admin.name }}
+  ports:
+    - port: {{ .Values.admin.service.port }}
+      targetPort: {{ .Values.admin.service.targetPort }}
+      protocol: {{ .Values.admin.service.protocol }}

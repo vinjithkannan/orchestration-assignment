@@ -1,0 +1,58 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.ingress.name }}
+  namespace: {{ .Values.namespace }}
+  annotations:
+    kubernetes.io/ingress.class: {{ .Values.ingress.annotations.ingressClass | quote }}
+    alb.ingress.kubernetes.io/scheme: {{ .Values.ingress.annotations.scheme | quote }}
+    alb.ingress.kubernetes.io/target-type: {{ .Values.ingress.annotations.targetType | quote }}
+    alb.ingress.kubernetes.io/listen-ports: {{ .Values.ingress.annotations.listenPorts | quote }}
+    alb.ingress.kubernetes.io/healthcheck-protocol: {{ .Values.ingress.annotations.healthcheckProtocol | quote }}
+    alb.ingress.kubernetes.io/healthcheck-port: {{ .Values.ingress.annotations.healthcheckPort | quote }}
+    alb.ingress.kubernetes.io/healthcheck-interval-seconds: {{ .Values.ingress.annotations.healthcheckIntervalSeconds | quote }}
+    alb.ingress.kubernetes.io/success-codes: {{ .Values.ingress.annotations.successCodes | quote }}
+
+spec:
+  rules:
+    - http:
+        paths:
+          - path: {{ .Values.ingress.routes.auth.path }}
+            pathType: {{ .Values.ingress.routes.auth.pathType }}
+            backend:
+              service:
+                name: {{ .Values.ingress.routes.auth.serviceName }}
+                port:
+                  number: {{ .Values.ingress.routes.auth.servicePort }}
+
+          - path: {{ .Values.ingress.routes.streaming.path }}
+            pathType: {{ .Values.ingress.routes.streaming.pathType }}
+            backend:
+              service:
+                name: {{ .Values.ingress.routes.streaming.serviceName }}
+                port:
+                  number: {{ .Values.ingress.routes.streaming.servicePort }}
+
+          - path: {{ .Values.ingress.routes.admin.path }}
+            pathType: {{ .Values.ingress.routes.admin.pathType }}
+            backend:
+              service:
+                name: {{ .Values.ingress.routes.admin.serviceName }}
+                port:
+                  number: {{ .Values.ingress.routes.admin.servicePort }}
+
+          - path: {{ .Values.ingress.routes.chat.path }}
+            pathType: {{ .Values.ingress.routes.chat.pathType }}
+            backend:
+              service:
+                name: {{ .Values.ingress.routes.chat.serviceName }}
+                port:
+                  number: {{ .Values.ingress.routes.chat.servicePort }}
+
+          - path: {{ .Values.ingress.routes.frontend.path }}
+            pathType: {{ .Values.ingress.routes.frontend.pathType }}
+            backend:
+              service:
+                name: {{ .Values.ingress.routes.frontend.serviceName }}
+                port:
+                  number: {{ .Values.ingress.routes.frontend.servicePort }}

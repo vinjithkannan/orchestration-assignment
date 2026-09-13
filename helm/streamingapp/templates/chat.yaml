@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.chat.name }}
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.chat.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.chat.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.chat.name }}
+    spec:
+      containers:
+        - name: {{ .Values.chat.name }}
+          image: "{{ .Values.imageRegistry }}/{{ .Values.chat.image.repository }}:{{ .Values.chat.image.tag }}"
+          imagePullPolicy: {{ .Values.chat.image.pullPolicy }}
+
+          ports:
+            - containerPort: {{ .Values.chat.containerPort }}
+
+          env:
+            - name: NODE_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.configMap.name }}
+                  key: NODE_ENV
+
+            - name: MONGO_URI
+              value: {{ .Values.chat.mongoUri | quote }}
+
+            - name: MONGO_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.configMap.name }}
+                  key: MONGO_HOST
+
+            - name: MONGO_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.configMap.name }}
+                  key: MONGO_PORT
+
+            - name: MONGO_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.configMap.name }}
+                  key: MONGO_DATABASE
+
+            - name: MONGO_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secret.name }}
+                  key: MONGO_USERNAME
+
+            - name: MONGO_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secret.name }}
+                  key: MONGO_PASSWORD
+
+          resources:
+            requests:
+              cpu: {{ .Values.chat.resources.requests.cpu | quote }}
+              memory: {{ .Values.chat.resources.requests.memory | quote }}
+            limits:
+              cpu: {{ .Values.chat.resources.limits.cpu | quote }}
+              memory: {{ .Values.chat.resources.limits.memory | quote }}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.chat.name }}
+  namespace: {{ .Values.namespace }}
+spec:
+  type: {{ .Values.chat.service.type }}
+  selector:
+    app: {{ .Values.chat.name }}
+  ports:
+    - port: {{ .Values.chat.service.port }}
+      targetPort: {{ .Values.chat.service.targetPort }}
+      protocol: {{ .Values.chat.service.protocol }}

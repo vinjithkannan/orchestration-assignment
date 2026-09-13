@@ -1,0 +1,174 @@
+namespace: streamingapp
+
+imageRegistry: 508564775932.dkr.ecr.ap-south-1.amazonaws.com
+
+configMap:
+  name: streamingapp-config
+
+secret:
+  name: streamingapp-secret
+
+ingress:
+  name: streamingapp-ingress
+
+  annotations:
+    ingressClass: alb
+    scheme: internet-facing
+    targetType: ip
+    listenPorts: '[{"HTTP":80}]'
+    healthcheckProtocol: HTTP
+    healthcheckPort: traffic-port
+    healthcheckIntervalSeconds: "15"
+    successCodes: "200"
+
+  routes:
+    auth:
+      path: /api/auth
+      pathType: Prefix
+      serviceName: auth
+      servicePort: 3001
+
+    streaming:
+      path: /api/streaming
+      pathType: Prefix
+      serviceName: streaming
+      servicePort: 3002
+
+    admin:
+      path: /api/admin
+      pathType: Prefix
+      serviceName: admin
+      servicePort: 3003
+
+    chat:
+      path: /api/chat
+      pathType: Prefix
+      serviceName: chat
+      servicePort: 3004
+
+    frontend:
+      path: /
+      pathType: Prefix
+      serviceName: frontend
+      servicePort: 80
+
+auth:
+  name: auth
+
+  replicaCount: 2
+
+  image:
+    repository: streamingapp/auth-service
+    tag: "1"
+    pullPolicy: Always
+
+  containerPort: 3001
+
+  clientUrls: "http://k8s-streamin-streamin-ca676dcfa1-1872173439.ap-south-1.elb.amazonaws.com"
+
+  service:
+    type: ClusterIP
+    port: 3001
+    targetPort: 3001
+    protocol: TCP
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  probes:
+    readiness:
+      path: /health
+      initialDelaySeconds: 15
+      periodSeconds: 10
+
+    liveness:
+      path: /health
+      initialDelaySeconds: 30
+      periodSeconds: 20
+
+admin:
+  name: admin
+
+  replicaCount: 1
+
+  image:
+    repository: streamingapp/admin-service
+    tag: "1"
+    pullPolicy: Always
+
+  containerPort: 3003
+
+  mongoUri: "mongodb://mongodb:27017/streamingapp"
+
+  service:
+    type: ClusterIP
+    port: 3003
+    targetPort: 3003
+    protocol: TCP
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+streaming:
+  name: streaming
+  replicaCount: 1
+
+  image:
+    repository: streamingapp/streaming-service
+    tag: "1"
+    pullPolicy: Always
+
+  containerPort: 3002
+
+  mongoUri: "mongodb://mongodb:27017/streamingapp"
+
+  service:
+    type: ClusterIP
+    port: 3002
+    targetPort: 3002
+    protocol: TCP
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+chat:
+  name: chat
+  replicaCount: 1
+
+  image:
+    repository: streamingapp/chat-service
+    tag: "1"
+    pullPolicy: Always
+
+  containerPort: 3004
+
+  mongoUri: "mongodb://mongodb:27017/streamingapp"
+
+  service:
+    type: ClusterIP
+    port: 3004
+    targetPort: 3004
+    protocol: TCP
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
