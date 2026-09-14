@@ -462,7 +462,7 @@ pipeline {
 
                         echo ""
                         echo "StreamingApp namespace:"
-                        kubectl get namespace "$kubectl get namespace"
+                        kubectl get namespace "$K8S_NAMESPACE"
 
 
                         echo ""
