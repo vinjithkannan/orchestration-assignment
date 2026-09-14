@@ -1,4 +1,53 @@
 ---
+# Source: streamingapp/templates/secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: streamingapp-secret
+  namespace: streamingapp
+type: Opaque
+stringData:
+  AUTH_SECRET: "auth-secret-change-me"
+  JWT_SECRET: "gWzgvK1ImRGinUPscFdRUjnWCl+H/WdKk9dfjhZxau8="
+  MONGO_PASSWORD: "streamingapp123"
+  MONGO_USERNAME: "streamingapp"
+  SESSION_SECRET: "session-secret-change-me"
+
+---
+# Source: streamingapp/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: streamingapp-config
+  namespace: streamingapp
+data:
+  ADMIN_SERVICE_URL: "http://admin:3003"
+  API_BASE_URL: "/api"
+  APP_ENV: "production"
+  AUTH_SERVICE_URL: "http://auth:3001"
+  CHAT_SERVICE_URL: "http://chat:3004"
+  MONGO_DATABASE: "streamingapp"
+  MONGO_HOST: "mongodb"
+  MONGO_PORT: "27017"
+  NODE_ENV: "production"
+  STREAMING_SERVICE_URL: "http://streaming:3002"
+---
+# Source: streamingapp/templates/mongo.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongodb-pvc
+  namespace: streamingapp
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: streamingapp-gp3
+  resources:
+    requests:
+      storage: 10Gi
+
+
+---
 # Source: streamingapp/templates/admin.yaml
 apiVersion: v1
 kind: Service
@@ -58,7 +107,21 @@ spec:
     - port: 80
       targetPort: 80
       protocol: TCP
-
+---
+# Source: streamingapp/templates/mongo.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb
+  namespace: streamingapp
+spec:
+  type: ClusterIP
+  selector:
+    app: mongodb
+  ports:
+    - port: 27017
+      targetPort: 27017
+      protocol: TCP
 ---
 # Source: streamingapp/templates/streaming.yaml
 apiVersion: v1
@@ -156,7 +219,7 @@ metadata:
   name: auth
   namespace: streamingapp
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: auth
@@ -335,7 +398,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: 508564775932.dkr.ecr.ap-south-1.amazonaws.com/streamingapp/frontend:1
+          image: "508564775932.dkr.ecr.ap-south-1.amazonaws.com/streamingapp/frontend:1"
           imagePullPolicy: Always
 
           ports:
@@ -362,6 +425,81 @@ spec:
               port: 80
             initialDelaySeconds: 30
             periodSeconds: 20
+
+
+---
+# Source: streamingapp/templates/mongo.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongodb
+  namespace: streamingapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongodb
+  template:
+    metadata:
+      labels:
+        app: mongodb
+    spec:
+      containers:
+        - name: mongodb
+          image: "mongo:7"
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - containerPort: 27017
+              protocol: TCP
+
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: streamingapp-secret
+                  key: MONGO_USERNAME
+
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: streamingapp-secret
+                  key: MONGO_PASSWORD
+
+            - name: MONGO_INITDB_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: streamingapp-config
+                  key: MONGO_DATABASE
+
+          volumeMounts:
+            - name: mongodb-storage
+              mountPath: /data/db
+
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
+          readinessProbe:
+            tcpSocket:
+              port: 27017
+            initialDelaySeconds: 10
+            periodSeconds: 10
+
+          livenessProbe:
+            tcpSocket:
+              port: 27017
+            initialDelaySeconds: 30
+            periodSeconds: 20
+
+      volumes:
+        - name: mongodb-storage
+          persistentVolumeClaim:
+            claimName: mongodb-pvc
 
 
 ---

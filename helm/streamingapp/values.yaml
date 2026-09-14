@@ -78,6 +78,47 @@ ingress:
       serviceName: frontend
       servicePort: 80
 
+mongo:
+  name: mongodb
+  replicaCount: 1
+
+  image:
+    repository: mongo
+    tag: "7"
+    pullPolicy: IfNotPresent
+
+  containerPort: 27017
+
+  database: streamingapp
+
+  persistence:
+    enabled: true
+    storageClassName: streamingapp-gp3
+    accessMode: ReadWriteOnce
+    size: 10Gi
+
+  service:
+    type: ClusterIP
+    port: 27017
+    targetPort: 27017
+    protocol: TCP
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  probes:
+    readiness:
+      initialDelaySeconds: 10
+      periodSeconds: 10
+    liveness:
+      initialDelaySeconds: 30
+      periodSeconds: 20
+
 auth:
   name: auth
 
