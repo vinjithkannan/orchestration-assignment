@@ -13,11 +13,17 @@ pipeline {
         ECR_REGISTRY = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
 
         // ECR repositories
-        AUTH_REPO     = "${ECR_REGISTRY}/streamingapp/auth-service"
-        STREAMING_REPO = "${ECR_REGISTRY}/streamingapp/streaming-service"
-        ADMIN_REPO    = "${ECR_REGISTRY}/streamingapp/admin-service"
-        CHAT_REPO     = "${ECR_REGISTRY}/streamingapp/chat-service"
-        FRONTEND_REPO = "${ECR_REGISTRY}/streamingapp/frontend"
+        AUTH_SERVICE     = "streamingapp/auth-service"
+        STREAMING_SERVICE = "streamingapp/streaming-service"
+        ADMIN_SERVICE    = "streamingapp/admin-service"
+        CHAT_SERVICE    = "streamingapp/chat-service"
+        FRONTEND_SERVICE = "streamingapp/frontend"
+
+        AUTH_REPO     = "${ECR_REGISTRY}/${AUTH_SERVICE}"
+        STREAMING_REPO = "${ECR_REGISTRY}/${STREAMING_SERVICE}"
+        ADMIN_REPO    = "${ECR_REGISTRY}/${ADMIN_SERVICE}"
+        CHAT_REPO     = "${ECR_REGISTRY}/${CHAT_SERVICE}"
+        FRONTEND_REPO = "${ECR_REGISTRY}/${FRONTEND_SERVICE}"
 
         // ---------------------------------------------------------
         // Build
@@ -456,7 +462,7 @@ pipeline {
 
                         echo ""
                         echo "StreamingApp namespace:"
-                        kubectl get namespace "$K8S_NAMESPACE"
+                        kubectl get namespace "$kubectl get namespace"
 
 
                         echo ""
@@ -504,19 +510,18 @@ pipeline {
                         helm upgrade --install "$HELM_RELEASE" "$HELM_CHART" \
                             --namespace "$K8S_NAMESPACE" \
                             --create-namespace \
-                            --set auth.image.repository="$AUTH_REPO" \
+                            --set auth.image.repository="$AUTH_SERVICE" \
                             --set auth.image.tag="$IMAGE_TAG" \
-                            --set streaming.image.repository="$STREAMING_REPO" \
+                            --set streaming.image.repository="$STREAMING_SERVICE" \
                             --set streaming.image.tag="$IMAGE_TAG" \
-                            --set admin.image.repository="$ADMIN_REPO" \
+                            --set admin.image.repository="$ADMIN_SERVICE" \
                             --set admin.image.tag="$IMAGE_TAG" \
-                            --set chat.image.repository="$CHAT_REPO" \
+                            --set chat.image.repository="$CHAT_SERVICE" \
                             --set chat.image.tag="$IMAGE_TAG" \
-                            --set frontend.image.repository="$FRONTEND_REPO" \
+                            --set frontend.image.repository="$FRONTEND_SERVICE" \
                             --set frontend.image.tag="$IMAGE_TAG" \
                             --wait \
                             --timeout 10m
-
 
                         echo ""
                         echo "=========================================="

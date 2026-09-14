@@ -172,3 +172,40 @@ chat:
     limits:
       cpu: 500m
       memory: 512Mi
+
+frontend:
+  name: frontend
+
+  replicaCount: 1
+
+  image:
+    repository: streamingapp/frontend
+    tag: "1"
+    pullPolicy: Always
+
+  containerPort: 80
+
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 80
+    protocol: TCP
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
+
+  probes:
+    readiness:
+      path: /
+      initialDelaySeconds: 10
+      periodSeconds: 10
+
+    liveness:
+      path: /
+      initialDelaySeconds: 30
+      periodSeconds: 20

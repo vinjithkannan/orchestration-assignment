@@ -1,59 +1,59 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: frontend
-  namespace: streamingapp
+  name: {{ .Values.frontend.name }}
+  namespace: {{ .Values.namespace }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.frontend.replicaCount }}
   selector:
     matchLabels:
-      app: frontend
+      app: {{ .Values.frontend.name }}
   template:
     metadata:
       labels:
-        app: frontend
+        app: {{ .Values.frontend.name }}
     spec:
       containers:
-        - name: frontend
-          image: 508564775932.dkr.ecr.ap-south-1.amazonaws.com/streamingapp/frontend:1
-          imagePullPolicy: Always
+        - name: {{ .Values.frontend.name }}
+          image: "{{ .Values.imageRegistry }}/{{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag }}"
+          imagePullPolicy: {{ .Values.frontend.image.pullPolicy }}
 
           ports:
-            - containerPort: 80
+            - containerPort: {{ .Values.frontend.containerPort }}
 
           resources:
             requests:
-              cpu: "50m"
-              memory: "64Mi"
+              cpu: {{ .Values.frontend.resources.requests.cpu | quote }}
+              memory: {{ .Values.frontend.resources.requests.memory | quote }}
             limits:
-              cpu: "250m"
-              memory: "256Mi"
+              cpu: {{ .Values.frontend.resources.limits.cpu | quote }}
+              memory: {{ .Values.frontend.resources.limits.memory | quote }}
 
           readinessProbe:
             httpGet:
-              path: /
-              port: 80
-            initialDelaySeconds: 10
-            periodSeconds: 10
+              path: {{ .Values.frontend.probes.readiness.path }}
+              port: {{ .Values.frontend.containerPort }}
+            initialDelaySeconds: {{ .Values.frontend.probes.readiness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.frontend.probes.readiness.periodSeconds }}
 
           livenessProbe:
             httpGet:
-              path: /
-              port: 80
-            initialDelaySeconds: 30
-            periodSeconds: 20
+              path: {{ .Values.frontend.probes.liveness.path }}
+              port: {{ .Values.frontend.containerPort }}
+            initialDelaySeconds: {{ .Values.frontend.probes.liveness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.frontend.probes.liveness.periodSeconds }}
 
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: frontend
-  namespace: streamingapp
+  name: {{ .Values.frontend.name }}
+  namespace: {{ .Values.namespace }}
 spec:
-  type: ClusterIP
+  type: {{ .Values.frontend.service.type }}
   selector:
-    app: frontend
+    app: {{ .Values.frontend.name }}
   ports:
-    - port: 80
-      targetPort: 80
-      protocol: TCP
+    - port: {{ .Values.frontend.service.port }}
+      targetPort: {{ .Values.frontend.service.targetPort }}
+      protocol: {{ .Values.frontend.service.protocol }}
