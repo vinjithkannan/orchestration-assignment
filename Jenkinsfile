@@ -521,7 +521,7 @@ pipeline {
                             --set frontend.image.repository="$FRONTEND_SERVICE" \
                             --set frontend.image.tag="$IMAGE_TAG" \
                             --wait \
-                            --timeout 10m
+                            --timeout 20m
 
                         echo ""
                         echo "=========================================="
