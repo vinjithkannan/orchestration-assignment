@@ -249,7 +249,7 @@ pipeline {
                             docker build \
                                 -t "$STREAMING_REPO:$IMAGE_TAG" \
                                 -f backend/streamingService/Dockerfile \
-                                ./backend
+                                ./backend/streamingService
                         '''
                     }
                 }
@@ -267,7 +267,7 @@ pipeline {
                             docker build \
                                 -t "$ADMIN_REPO:$IMAGE_TAG" \
                                 -f backend/adminService/Dockerfile \
-                                ./backend
+                                ./backend/adminService
                         '''
                     }
                 }
@@ -285,7 +285,7 @@ pipeline {
                             docker build \
                                 -t "$CHAT_REPO:$IMAGE_TAG" \
                                 -f backend/chatService/Dockerfile \
-                                ./backend
+                                ./backend/chatService
                         '''
                     }
                 }
