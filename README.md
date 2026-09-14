@@ -1,822 +1,1155 @@
-# StreamingApp — Container Orchestration Assignment
+# StreamingApp — Container Orchestration & Scaling on AWS EKS
 
-## 67-Step Implementation Guide
+![AWS](https://img.shields.io/badge/AWS-ap--south--1-orange)
+![Docker](https://img.shields.io/badge/Docker-Containerized-blue)
+![Kubernetes](https://img.shields.io/badge/Kubernetes-EKS-326CE5)
+![Jenkins](https://img.shields.io/badge/Jenkins-CI-red)
+![Amazon ECR](https://img.shields.io/badge/Amazon-ECR-orange)
+![Helm](https://img.shields.io/badge/Helm-Kubernetes-0F1689)
 
-> **AWS Region:** `ap-south-1`  
-> **Kubernetes Namespace:** `streamingapp`  
-> **ECR Registry:** `508564775932.dkr.ecr.ap-south-1.amazonaws.com`
+## Project Overview
 
-This README documents the end-to-end implementation of the StreamingApp container orchestration assignment, including Docker images, Amazon ECR, Amazon EKS, Kubernetes, AWS Load Balancer Controller/ALB ingress, Helm conversion, deployment and verification.
+This project demonstrates the deployment of a containerized MERN-based Streaming Application using modern DevOps and container orchestration practices.
 
----
+The application consists of multiple backend microservices, a React frontend, and MongoDB.
 
-## 1. Project Overview
+The implementation covers:
 
-StreamingApp is a multi-service web application deployed as Docker containers and orchestrated using Kubernetes on Amazon EKS.
-
-The application contains:
-
-- Auth service
-- Streaming service
-- Admin service
-- Chat service
-- Frontend
-
----
-
-## 2. Objectives
-
-The assignment demonstrates:
-
-- Containerization with Docker
-- Local Docker Compose execution
-- Amazon ECR image storage
-- Amazon EKS cluster creation
+- Application containerization using Docker
+- Local application validation using Docker Compose
+- Amazon Elastic Container Registry (ECR)
+- Jenkins CI/CD
+- Amazon Elastic Kubernetes Service (EKS)
 - Kubernetes Deployments and Services
-- ALB-based Ingress routing
-- Frontend/API integration
-- Helm chart packaging and deployment
-- Application verification and troubleshooting
-
----
-
-## 3. Technology Stack
-
-- Docker / Docker Compose
-- Kubernetes
-- Amazon EKS
-- Amazon ECR
+- Kubernetes ConfigMaps and Secrets
+- Health checks and probes
+- Helm-based deployment
+- Kubernetes scaling
+- Rolling updates
 - AWS Application Load Balancer
-- Helm
-- kubectl
-- eksctl
-- AWS CLI
-- Node.js / React frontend and backend services
+- Kubernetes Ingress
+- Application verification
+- Monitoring and logging
+- Cost-conscious AWS deployment
 
 ---
 
-## 4. AWS Region
+# Architecture
 
-Use:
-
-```cmd
-aws configure set region ap-south-1
+```text
+                         Developer
+                             |
+                             v
+                      GitHub Repository
+                             |
+                             v
+                          Jenkins
+                         CI / CD
+                             |
+                             v
+                    Amazon ECR (ap-south-1)
+                             |
+       +---------------------+---------------------+
+       |          |          |          |          |
+       v          v          v          v          v
+     Auth     Streaming     Admin      Chat      Frontend
+   Service     Service     Service    Service     Image
+   :3001       :3002       :3003      :3004      nginx:80
+       |          |          |          |          |
+       +----------+----------+----------+----------+
+                             |
+                             v
+                    Amazon EKS Cluster
+                    streamingapp namespace
+                             |
+              +--------------+--------------+
+              |                             |
+              v                             v
+        Kubernetes Services              MongoDB
+              |                          :27017
+              |
+              v
+        AWS Load Balancer
+              |
+              v
+           Internet
 ```
 
-📸 **Screenshot – Step 4: AWS region configuration**
+---
 
-> Add screenshot here.
+# Application Services
+
+| Service | Port | Purpose |
+|---|---:|---|
+| Auth Service | 3001 | Authentication and user management |
+| Streaming Service | 3002 | Streaming functionality |
+| Admin Service | 3003 | Administration APIs |
+| Chat Service | 3004 | Chat and Socket.IO |
+| Frontend | 3000 / 80 | React application |
+| MongoDB | 27017 | Application database |
 
 ---
 
-## 5. Verify AWS CLI
+# AWS Region
 
-```cmd
-aws --version
-aws sts get-caller-identity
-aws configure get region
+All AWS resources used in this project are deployed in:
+
+```text
+ap-south-1
 ```
 
-📸 **Screenshot – Step 5: AWS CLI verification**
-
-> Add screenshot here.
+**AWS Region:** Mumbai, India
 
 ---
 
-## 6. Verify Docker
+# PART 1 — Project Preparation
 
-```cmd
+## Step 1 — Verify Git
+
+```powershell
+git --version
+```
+
+Expected:
+
+```text
+git version <version>
+```
+
+### Screenshot
+
+```text
+[SCREENSHOT 01 — Git version]
+```
+
+---
+
+## Step 2 — Verify Docker
+
+```powershell
 docker --version
+```
+
+### Screenshot
+
+```text
+[SCREENSHOT 02 — Docker version]
+```
+
+---
+
+## Step 3 — Verify Docker Compose
+
+```powershell
 docker compose version
-docker info
 ```
 
-📸 **Screenshot – Step 6: Docker verification**
+### Screenshot
 
-> Add screenshot here.
+```text
+[SCREENSHOT 03 — Docker Compose version]
+```
 
 ---
 
-## 7. Verify kubectl
+## Step 4 — Verify AWS CLI
 
-```cmd
-kubectl version --client
+```powershell
+aws --version
 ```
 
-📸 **Screenshot – Step 7: kubectl verification**
+### Screenshot
 
-> Add screenshot here.
+```text
+[SCREENSHOT 04 — AWS CLI version]
+```
 
 ---
 
-## 8. Verify Helm
+## Step 5 — Verify AWS Identity
 
-```cmd
-helm version
+```powershell
+aws sts get-caller-identity
 ```
 
-📸 **Screenshot – Step 8: Helm verification**
+This confirms that the AWS CLI is authenticated.
 
-> Add screenshot here.
+### Screenshot
+
+```text
+[SCREENSHOT 05 — AWS STS identity]
+```
 
 ---
 
-## 9. Verify eksctl
+# PART 2 — Clone the Application
 
-```cmd
-eksctl version
+## Step 6 — Create Project Directory
+
+```powershell
+C:
+cd \
+mkdir Projects
+cd Projects
 ```
-
-📸 **Screenshot – Step 9: eksctl verification**
-
-> Add screenshot here.
 
 ---
 
-## 10. Open the Project
+## Step 7 — Clone Repository
 
-```cmd
-cd /d "H:\Vlearn-Herovired\aws\Orchestration&Scaling\StreamingApp (orchestration-assignment)"
+```powershell
+git clone https://github.com/UnpredictablePrashant/StreamingApp.git
 ```
-
-📸 **Screenshot – Step 10: Project directory**
-
-> Add screenshot here.
 
 ---
 
-## 11. Project Structure
+## Step 8 — Enter Project Directory
 
-Typical structure:
+```powershell
+cd StreamingApp
+```
+
+---
+
+## Step 9 — Check Git Status
+
+```powershell
+git status
+```
+
+---
+
+## Step 10 — Create Development Branch
+
+```powershell
+git checkout -b devops-assignment
+```
+
+Verify:
+
+```powershell
+git branch
+```
+
+### Screenshot
+
+```text
+[SCREENSHOT 06 — Git repository and branch]
+```
+
+---
+
+# PART 3 — Application Configuration
+
+## Step 11 — Inspect Project Structure
+
+Expected major structure:
 
 ```text
 StreamingApp/
-├── auth-service/
-├── admin-service/
-├── streaming-service/
-├── chat-service/
+├── backend/
+│   ├── authService/
+│   ├── streamingService/
+│   ├── adminService/
+│   └── chatService/
 ├── frontend/
-├── k8s/
-├── helm/
 ├── docker-compose.yml
+├── .env.example
+├── .gitignore
 └── README.md
 ```
 
-📸 **Screenshot – Step 11: Project structure**
+### Screenshot
 
-> Add screenshot here.
+```text
+[SCREENSHOT 07 — Project directory structure]
+```
 
 ---
 
-## 12. Review Dockerfiles
+## Step 12 — Create Environment File
 
-Review each service Dockerfile and confirm that every application can be built independently.
-
-```cmd
-dir /S /B Dockerfile
+```powershell
+Copy-Item .env.example .env
 ```
-
-📸 **Screenshot – Step 12: Dockerfiles**
-
-> Add screenshot here.
 
 ---
 
-## 13. Build Docker Images
+## Step 13 — Validate Docker Compose Configuration
 
-Build the application images using the project's Docker Compose configuration:
-
-```cmd
-docker compose build
+```powershell
+docker compose config
 ```
 
-Verify:
+The configuration should be parsed successfully without YAML errors.
 
-```cmd
-docker images
+### Screenshot
+
+```text
+[SCREENSHOT 08 — Docker Compose configuration]
 ```
-
-📸 **Screenshot – Step 13: Docker image build**
-
-> Add screenshot here.
 
 ---
 
-## 14. Run Locally
+# PART 4 — Local Docker Deployment
 
-```cmd
-docker compose up -d
+## Step 14 — Start Application
+
+```powershell
+docker compose up --build
 ```
 
-Verify:
+This builds and starts:
 
-```cmd
+- MongoDB
+- Auth Service
+- Streaming Service
+- Admin Service
+- Chat Service
+- Frontend
+
+### Screenshot
+
+```text
+[SCREENSHOT 09 — Docker Compose startup]
+```
+
+---
+
+## Step 15 — Open Second Terminal
+
+Open another PowerShell window and execute:
+
+```powershell
+cd C:\Projects\StreamingApp
+```
+
+---
+
+## Step 16 — Check Compose Services
+
+```powershell
 docker compose ps
 ```
 
-📸 **Screenshot – Step 14: Local containers**
+### Screenshot
 
-> Add screenshot here.
-
----
-
-## 15. Local Verification
-
-Check application endpoints and frontend locally according to the project's Docker Compose port mappings.
-
-```cmd
-docker compose ps
+```text
+[SCREENSHOT 10 — Docker Compose services]
 ```
 
-📸 **Screenshot – Step 15: Local application verification**
+---
 
-> Add screenshot here.
+## Step 17 — Check Running Containers
+
+```powershell
+docker ps
+```
+
+### Screenshot
+
+```text
+[SCREENSHOT 11 — Running Docker containers]
+```
 
 ---
 
-## 16. Stop Local Containers
+## Step 18 — Test Auth Service
 
-```cmd
+```powershell
+curl http://localhost:3001/health
+```
+
+Expected response should indicate that the service is healthy.
+
+### Screenshot
+
+```text
+[SCREENSHOT 12 — Auth health check]
+```
+
+---
+
+## Step 19 — Test Streaming Service
+
+```powershell
+curl http://localhost:3002/api/health
+```
+
+### Screenshot
+
+```text
+[SCREENSHOT 13 — Streaming health check]
+```
+
+---
+
+## Step 20 — Test Chat Service
+
+```powershell
+curl http://localhost:3004/api/health
+```
+
+### Screenshot
+
+```text
+[SCREENSHOT 14 — Chat health check]
+```
+
+---
+
+## Step 21 — Open Frontend
+
+Open:
+
+```text
+http://localhost:3000
+```
+
+### Screenshot
+
+```text
+[SCREENSHOT 15 — StreamingApp frontend]
+```
+
+---
+
+## Step 22 — Check Application Logs
+
+```powershell
+docker compose logs
+```
+
+---
+
+## Step 23 — Check Auth Logs
+
+```powershell
+docker compose logs authService
+```
+
+---
+
+## Step 24 — Check Streaming Logs
+
+```powershell
+docker compose logs streamingService
+```
+
+---
+
+## Step 25 — Check Chat Logs
+
+```powershell
+docker compose logs chatService
+```
+
+---
+
+## Step 26 — Stop Local Environment
+
+Press:
+
+```text
+Ctrl + C
+```
+
+Then:
+
+```powershell
 docker compose down
 ```
 
-📸 **Screenshot – Step 16: Docker Compose shutdown**
+---
 
-> Add screenshot here.
+# PART 5 — Build Docker Images
+
+## Step 27 — Build Auth Service
+
+```powershell
+docker build `
+  -t streamingapp/auth-service:local `
+  ./backend/authService
+```
 
 ---
 
-## 17. Create ECR Repositories
+## Step 28 — Build Streaming Service
 
-Create repositories for each application image:
-
-```cmd
-aws ecr create-repository --repository-name streamingapp/auth-service --region ap-south-1
-aws ecr create-repository --repository-name streamingapp/admin-service --region ap-south-1
-aws ecr create-repository --repository-name streamingapp/streaming-service --region ap-south-1
-aws ecr create-repository --repository-name streamingapp/chat-service --region ap-south-1
-aws ecr create-repository --repository-name streamingapp/frontend --region ap-south-1
+```powershell
+docker build `
+  -t streamingapp/streaming-service:local `
+  -f ./backend/streamingService/Dockerfile `
+  ./backend
 ```
-
-📸 **Screenshot – Step 17: ECR repositories**
-
-> Add screenshot here.
 
 ---
 
-## 18. ECR Docker Login
+## Step 29 — Build Admin Service
 
-```cmd
-aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 508564775932.dkr.ecr.ap-south-1.amazonaws.com
+```powershell
+docker build `
+  -t streamingapp/admin-service:local `
+  -f ./backend/adminService/Dockerfile `
+  ./backend
 ```
-
-📸 **Screenshot – Step 18: ECR login**
-
-> Add screenshot here.
 
 ---
 
-## 19. Tag Auth Image
+## Step 30 — Build Chat Service
 
-```cmd
-docker tag streamingapp/auth-service:1 508564775932.dkr.ecr.ap-south-1.amazonaws.com/streamingapp/auth-service:1
+```powershell
+docker build `
+  -t streamingapp/chat-service:local `
+  -f ./backend/chatService/Dockerfile `
+  ./backend
 ```
-
-📸 **Screenshot – Step 19**
-
-> Add screenshot here.
 
 ---
 
-## 20. Tag Admin Image
+## Step 31 — Build Frontend
 
-```cmd
-docker tag streamingapp/admin-service:1 508564775932.dkr.ecr.ap-south-1.amazonaws.com/streamingapp/admin-service:1
+```powershell
+docker build `
+  -t streamingapp/frontend:local `
+  ./frontend
 ```
-
-📸 **Screenshot – Step 20**
-
-> Add screenshot here.
 
 ---
 
-## 21. Tag Streaming Image
+## Step 32 — Verify Docker Images
 
-```cmd
-docker tag streamingapp/streaming-service:1 508564775932.dkr.ecr.ap-south-1.amazonaws.com/streamingapp/streaming-service:1
+```powershell
+docker images | Select-String "streamingapp"
 ```
 
-📸 **Screenshot – Step 21**
+Expected images:
 
-> Add screenshot here.
+```text
+streamingapp/auth-service
+streamingapp/streaming-service
+streamingapp/admin-service
+streamingapp/chat-service
+streamingapp/frontend
+```
+
+### Screenshot
+
+```text
+[SCREENSHOT 16 — Five Docker images]
+```
 
 ---
 
-## 22. Tag Chat Image
+# PART 6 — Configure AWS ECR
 
-```cmd
-docker tag streamingapp/chat-service:1 508564775932.dkr.ecr.ap-south-1.amazonaws.com/streamingapp/chat-service:1
+## Step 33 — Set AWS Region
+
+```powershell
+$env:AWS_REGION="ap-south-1"
 ```
-
-📸 **Screenshot – Step 22**
-
-> Add screenshot here.
 
 ---
 
-## 23. Tag Frontend Image
+## Step 34 — Get AWS Account ID
 
-```cmd
-docker tag streamingapp/frontend:1 508564775932.dkr.ecr.ap-south-1.amazonaws.com/streamingapp/frontend:1
-```
-
-📸 **Screenshot – Step 23**
-
-> Add screenshot here.
-
----
-
-## 24. Push Auth Image
-
-```cmd
-docker push 508564775932.dkr.ecr.ap-south-1.amazonaws.com/streamingapp/auth-service:1
-```
-
-📸 **Screenshot – Step 24**
-
-> Add screenshot here.
-
----
-
-## 25. Push Admin Image
-
-```cmd
-docker push 508564775932.dkr.ecr.ap-south-1.amazonaws.com/streamingapp/admin-service:1
-```
-
-📸 **Screenshot – Step 25**
-
-> Add screenshot here.
-
----
-
-## 26. Push Streaming Image
-
-```cmd
-docker push 508564775932.dkr.ecr.ap-south-1.amazonaws.com/streamingapp/streaming-service:1
-```
-
-📸 **Screenshot – Step 26**
-
-> Add screenshot here.
-
----
-
-## 27. Push Chat Image
-
-```cmd
-docker push 508564775932.dkr.ecr.ap-south-1.amazonaws.com/streamingapp/chat-service:1
-```
-
-📸 **Screenshot – Step 27**
-
-> Add screenshot here.
-
----
-
-## 28. Push Frontend Image
-
-```cmd
-docker push 508564775932.dkr.ecr.ap-south-1.amazonaws.com/streamingapp/frontend:1
-```
-
-📸 **Screenshot – Step 28**
-
-> Add screenshot here.
-
----
-
-## 29. Verify ECR Images
-
-```cmd
-aws ecr describe-repositories --region ap-south-1
-aws ecr list-images --repository-name streamingapp/auth-service --region ap-south-1
-aws ecr list-images --repository-name streamingapp/admin-service --region ap-south-1
-aws ecr list-images --repository-name streamingapp/streaming-service --region ap-south-1
-aws ecr list-images --repository-name streamingapp/chat-service --region ap-south-1
-aws ecr list-images --repository-name streamingapp/frontend --region ap-south-1
-```
-
-📸 **Screenshot – Step 29: ECR images**
-
-> Add screenshot here.
-
----
-
-## 30. Prepare EKS Cluster Configuration
-
-Create or review the EKS cluster configuration used by the assignment.
-
-Example validation command:
-
-```cmd
-eksctl create cluster -f k8s/cluster.yaml --dry-run
-```
-
-📸 **Screenshot – Step 30: EKS cluster configuration**
-
-> Add screenshot here.
-
----
-
-## 31. Validate EKS Configuration
-
-```cmd
-eksctl create cluster -f k8s/cluster.yaml --dry-run
-```
-
-If AWS credentials are expired, refresh the AWS session before continuing.
-
-```cmd
-aws sts get-caller-identity
-```
-
-📸 **Screenshot – Step 31: EKS validation**
-
-> Add screenshot here.
-
----
-
-## 32. Create the EKS Cluster
-
-```cmd
-eksctl create cluster -f k8s/cluster.yaml
-```
-
-📸 **Screenshot – Step 32: EKS cluster creation**
-
-> Add screenshot here.
-
----
-
-## 33. Update kubeconfig
-
-```cmd
-aws eks update-kubeconfig --region ap-south-1 --name <EKS-CLUSTER-NAME>
-```
-
-📸 **Screenshot – Step 33: kubeconfig update**
-
-> Add screenshot here.
-
----
-
-## 34. Verify EKS Nodes
-
-```cmd
-kubectl get nodes
-```
-
-📸 **Screenshot – Step 34: EKS nodes**
-
-> Add screenshot here.
-
----
-
-## 35. Create/Verify Namespace
-
-```cmd
-kubectl create namespace streamingapp --dry-run=client -o yaml | kubectl apply -f -
+```powershell
+$env:AWS_ACCOUNT_ID = aws sts get-caller-identity --query Account --output text
 ```
 
 Verify:
 
-```cmd
-kubectl get namespace streamingapp
+```powershell
+$env:AWS_ACCOUNT_ID
 ```
-
-📸 **Screenshot – Step 35: Namespace**
-
-> Add screenshot here.
 
 ---
 
-## 36. Review ConfigMap and Secret
+## Step 35 — Set ECR Registry
 
-Verify the application configuration used by the Kubernetes manifests.
-
-```cmd
-kubectl get configmap -n streamingapp
-kubectl get secret -n streamingapp
+```powershell
+$env:ECR_REGISTRY="$env:AWS_ACCOUNT_ID.dkr.ecr.$env:AWS_REGION.amazonaws.com"
 ```
 
-📸 **Screenshot – Step 36: ConfigMap and Secret**
+Verify:
 
-> Add screenshot here.
+```powershell
+$env:ECR_REGISTRY
+```
 
 ---
 
-## 37. Apply Application Configuration
+## Step 36 — Create Auth ECR Repository
 
-Apply the project's configuration resources, if they are maintained separately from the deployments.
-
-```cmd
-kubectl apply -f k8s/ -n streamingapp
+```powershell
+aws ecr create-repository `
+  --repository-name streamingapp/auth-service `
+  --region $env:AWS_REGION
 ```
-
-> If using Helm exclusively, apply only the required non-Helm configuration and avoid creating duplicate application resources.
-
-📸 **Screenshot – Step 37: Kubernetes configuration**
-
-> Add screenshot here.
 
 ---
 
-## 38. Deploy Auth Service
+## Step 37 — Create Streaming ECR Repository
 
-```cmd
-kubectl apply -f k8s/auth.yaml -n streamingapp
+```powershell
+aws ecr create-repository `
+  --repository-name streamingapp/streaming-service `
+  --region $env:AWS_REGION
 ```
-
-📸 **Screenshot – Step 38: Auth deployment**
-
-> Add screenshot here.
 
 ---
 
-## 39. Deploy Admin Service
+## Step 38 — Create Admin ECR Repository
 
-```cmd
-kubectl apply -f k8s/admin.yaml -n streamingapp
+```powershell
+aws ecr create-repository `
+  --repository-name streamingapp/admin-service `
+  --region $env:AWS_REGION
 ```
-
-📸 **Screenshot – Step 39: Admin deployment**
-
-> Add screenshot here.
 
 ---
 
-## 40. Deploy Streaming Service
+## Step 39 — Create Chat ECR Repository
 
-```cmd
-kubectl apply -f k8s/streaming.yaml -n streamingapp
+```powershell
+aws ecr create-repository `
+  --repository-name streamingapp/chat-service `
+  --region $env:AWS_REGION
 ```
-
-📸 **Screenshot – Step 40: Streaming deployment**
-
-> Add screenshot here.
 
 ---
 
-## 41. Deploy Chat Service
+## Step 40 — Verify ECR Repositories
 
-```cmd
-kubectl apply -f k8s/chat.yaml -n streamingapp
+```powershell
+aws ecr describe-repositories `
+  --region $env:AWS_REGION `
+  --query "repositories[].repositoryName" `
+  --output table
 ```
 
-📸 **Screenshot – Step 41: Chat deployment**
+Expected:
 
-> Add screenshot here.
+```text
+streamingapp/auth-service
+streamingapp/streaming-service
+streamingapp/admin-service
+streamingapp/chat-service
+```
+
+### Screenshot
+
+```text
+[SCREENSHOT 17 — ECR repositories]
+```
 
 ---
 
-## 42. Deploy Frontend
+# PART 7 — Push Images to ECR
 
-```cmd
-kubectl apply -f k8s/frontend.yaml -n streamingapp
+## Step 41 — Login to ECR
+
+```powershell
+aws ecr get-login-password --region $env:AWS_REGION |
+docker login --username AWS --password-stdin $env:ECR_REGISTRY
 ```
 
-📸 **Screenshot – Step 42: Frontend deployment**
+Expected:
 
-> Add screenshot here.
+```text
+Login Succeeded
+```
+
+### Screenshot
+
+```text
+[SCREENSHOT 18 — ECR Docker login]
+```
 
 ---
 
-## 43. Verify Pods
+## Step 42 — Tag Auth Image
 
-```cmd
-kubectl get pods -n streamingapp -o wide
+```powershell
+docker tag streamingapp/auth-service:local `
+  "$env:ECR_REGISTRY/streamingapp/auth-service:1"
 ```
-
-All application pods should eventually show `Running` and `READY` as expected.
-
-📸 **Screenshot – Step 43: Pods running**
-
-> Add screenshot here.
 
 ---
 
-## 44. Verify Services
+## Step 43 — Push Auth Image
 
-```cmd
+```powershell
+docker push `
+  "$env:ECR_REGISTRY/streamingapp/auth-service:1"
+```
+
+### Screenshot
+
+```text
+[SCREENSHOT 19 — Auth image pushed to ECR]
+```
+
+---
+
+## Step 44 — Tag Streaming Image
+
+```powershell
+docker tag streamingapp/streaming-service:local `
+  "$env:ECR_REGISTRY/streamingapp/streaming-service:1"
+```
+
+---
+
+## Step 45 — Push Streaming Image
+
+```powershell
+docker push `
+  "$env:ECR_REGISTRY/streamingapp/streaming-service:1"
+```
+
+### Screenshot
+
+```text
+[SCREENSHOT 20 — Streaming image pushed]
+```
+
+---
+
+## Step 46 — Tag Admin Image
+
+```powershell
+docker tag streamingapp/admin-service:local `
+  "$env:ECR_REGISTRY/streamingapp/admin-service:1"
+```
+
+---
+
+## Step 47 — Push Admin Image
+
+```powershell
+docker push `
+  "$env:ECR_REGISTRY/streamingapp/admin-service:1"
+```
+
+### Screenshot
+
+```text
+[SCREENSHOT 21 — Admin image pushed]
+```
+
+---
+
+## Step 48 — Tag Chat Image
+
+```powershell
+docker tag streamingapp/chat-service:local `
+  "$env:ECR_REGISTRY/streamingapp/chat-service:1"
+```
+
+---
+
+## Step 49 — Push Chat Image
+
+```powershell
+docker push `
+  "$env:ECR_REGISTRY/streamingapp/chat-service:1"
+```
+
+### Screenshot
+
+```text
+[SCREENSHOT 22 — Chat image pushed]
+```
+
+---
+
+## Step 50 — Verify ECR Images
+
+```powershell
+$repos = @(
+    "streamingapp/auth-service",
+    "streamingapp/streaming-service",
+    "streamingapp/admin-service",
+    "streamingapp/chat-service"
+)
+
+foreach ($repo in $repos) {
+    Write-Host "`n===== $repo ====="
+
+    aws ecr describe-images `
+      --repository-name $repo `
+      --region $env:AWS_REGION `
+      --query "imageDetails[].{Tags:imageTags,PushedAt:imagePushedAt}" `
+      --output table
+}
+```
+
+### Screenshot
+
+```text
+[SCREENSHOT 23 — All backend images in ECR]
+```
+
+---
+
+# PART 8 — Jenkins CI/CD
+
+## Step 51 — Prepare Jenkins EC2
+
+Create an EC2 instance for Jenkins.
+
+Recommended demonstration configuration:
+
+```text
+Instance type: t3.small
+OS: Amazon Linux
+Region: ap-south-1
+```
+
+Jenkins should have permission to:
+
+- Build Docker images
+- Authenticate with ECR
+- Push images to ECR
+
+### Screenshot
+
+```text
+[SCREENSHOT 24 — Jenkins EC2 instance]
+```
+
+---
+
+## Step 52 — Install Jenkins
+
+Install Java and Jenkins on the Jenkins EC2 instance.
+
+Verify:
+
+```bash
+java --version
+```
+
+and:
+
+```bash
+sudo systemctl status jenkins
+```
+
+### Screenshot
+
+```text
+[SCREENSHOT 25 — Jenkins service]
+```
+
+---
+
+## Step 53 — Open Jenkins
+
+Access Jenkins through the configured Jenkins URL.
+
+Example:
+
+```text
+http://<JENKINS_PUBLIC_IP>:8080
+```
+
+### Screenshot
+
+```text
+[SCREENSHOT 26 — Jenkins dashboard]
+```
+
+---
+
+## Step 54 — Configure Jenkins Credentials
+
+Configure the AWS credentials required for ECR operations.
+
+Use least-privilege IAM permissions where possible.
+
+### Screenshot
+
+```text
+[SCREENSHOT 27 — Jenkins credentials]
+```
+
+---
+
+## Step 55 — Create Jenkins Pipeline
+
+Create a Pipeline job for StreamingApp.
+
+Pipeline stages should include:
+
+```text
+Checkout
+   ↓
+Build
+   ↓
+Test
+   ↓
+Docker Build
+   ↓
+ECR Login
+   ↓
+Push Images
+```
+
+### Screenshot
+
+```text
+[SCREENSHOT 28 — Jenkins pipeline stages]
+```
+
+---
+
+## Step 56 — Run Jenkins Build
+
+Trigger a Jenkins build.
+
+Verify that all stages complete successfully.
+
+### Screenshot
+
+```text
+[SCREENSHOT 29 — Successful Jenkins build]
+```
+
+---
+
+# PART 9 — Create EKS Cluster
+
+## Step 57 — Verify eksctl
+
+```powershell
+eksctl version
+```
+
+---
+
+## Step 58 — Create EKS Cluster Configuration
+
+Create:
+
+```text
+k8s/cluster.yaml
+```
+
+Configuration:
+
+```yaml
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: streamingapp-eks
+  region: ap-south-1
+
+vpc:
+  nat:
+    gateway: Disable
+
+managedNodeGroups:
+  - name: workers
+    instanceType: t3.small
+    minSize: 2
+    desiredCapacity: 2
+    maxSize: 2
+    privateNetworking: false
+    volumeSize: 20
+    volumeType: gp3
+    volumeEncrypted: true
+```
+
+---
+
+## Step 59 — Validate Cluster Configuration
+
+```powershell
+eksctl create cluster -f k8s/cluster.yaml --dry-run
+```
+
+The configuration should pass validation.
+
+### Screenshot
+
+```text
+[SCREENSHOT 30 — EKS dry-run validation]
+```
+
+---
+
+## Step 60 — Create EKS Cluster
+
+```powershell
+eksctl create cluster -f k8s/cluster.yaml
+```
+
+This creates the EKS control plane and worker nodes.
+
+### Screenshot
+
+```text
+[SCREENSHOT 31 — EKS cluster creation]
+```
+
+---
+
+# PART 10 — Kubernetes Deployment
+
+## Step 61 — Verify Kubernetes Context
+
+```powershell
+kubectl config current-context
+```
+
+---
+
+## Step 62 — Verify Cluster
+
+```powershell
+kubectl get nodes
+```
+
+Expected:
+
+```text
+STATUS   Ready
+```
+
+### Screenshot
+
+```text
+[SCREENSHOT 32 — EKS worker nodes]
+```
+
+---
+
+## Step 63 — Create Namespace
+
+```powershell
+kubectl create namespace streamingapp
+```
+
+Verify:
+
+```powershell
+kubectl get namespaces
+```
+
+---
+
+## Step 64 — Create Kubernetes Configuration
+
+Create the required Kubernetes configuration files:
+
+```text
+k8s/
+├── namespace.yaml
+├── backend-deployment.yaml
+├── backend-service.yaml
+├── frontend-deployment.yaml
+├── frontend-service.yaml
+├── mongo-deployment.yaml
+├── mongo-service.yaml
+├── configmap.yaml
+├── secret.yaml
+└── ingress.yaml
+```
+
+### Screenshot
+
+```text
+[SCREENSHOT 33 — Kubernetes manifest files]
+```
+
+---
+
+## Step 65 — Deploy MongoDB
+
+Apply MongoDB resources:
+
+```powershell
+kubectl apply -f k8s/mongo-deployment.yaml -n streamingapp
+kubectl apply -f k8s/mongo-service.yaml -n streamingapp
+```
+
+Verify:
+
+```powershell
+kubectl get pods -n streamingapp
+```
+
+### Screenshot
+
+```text
+[SCREENSHOT 34 — MongoDB pod]
+```
+
+---
+
+## Step 66 — Deploy Backend Services
+
+Deploy:
+
+- Auth Service
+- Streaming Service
+- Admin Service
+- Chat Service
+
+Example:
+
+```powershell
+kubectl apply -f k8s/backend-deployment.yaml -n streamingapp
+kubectl apply -f k8s/backend-service.yaml -n streamingapp
+```
+
+Verify:
+
+```powershell
+kubectl get deployments -n streamingapp
+kubectl get services -n streamingapp
+```
+
+### Screenshot
+
+```text
+[SCREENSHOT 35 — Backend Kubernetes deployments]
+```
+
+---
+
+## Step 67 — Deploy Frontend
+
+Apply:
+
+```powershell
+kubectl apply -f k8s/frontend-deployment.yaml -n streamingapp
+kubectl apply -f k8s/frontend-service.yaml -n streamingapp
+```
+
+Verify:
+
+```powershell
+kubectl get pods -n streamingapp
 kubectl get svc -n streamingapp
 ```
 
-Expected application services include:
-
-- `auth` — 3001
-- `streaming` — 3002
-- `admin` — 3003
-- `chat` — 3004
-- `frontend` — 80
-
-📸 **Screenshot – Step 44: Services**
-
-> Add screenshot here.
-
----
-
-## 45. Verify Deployments
-
-```cmd
-kubectl get deployments -n streamingapp
-```
-
-📸 **Screenshot – Step 45: Deployments**
-
-> Add screenshot here.
-
----
-
-## 46. Check Application Logs
-
-Example:
-
-```cmd
-kubectl logs deployment/auth -n streamingapp
-kubectl logs deployment/streaming -n streamingapp
-kubectl logs deployment/admin -n streamingapp
-kubectl logs deployment/chat -n streamingapp
-kubectl logs deployment/frontend -n streamingapp
-```
-
-📸 **Screenshot – Step 46: Application logs**
-
-> Add screenshot here.
-
----
-
-## 47. Troubleshoot Pods if Required
-
-```cmd
-kubectl describe pod <POD-NAME> -n streamingapp
-kubectl get events -n streamingapp --sort-by=.lastTimestamp
-```
-
-For image pull issues, verify ECR repository names, tags, node permissions and AWS region.
-
-📸 **Screenshot – Step 47: Troubleshooting**
-
-> Add screenshot here.
-
----
-
-## 48. Configure ALB Ingress
-
-The application ingress routes:
+### Screenshot
 
 ```text
-/api/auth       -> auth:3001
-/api/streaming  -> streaming:3002
-/api/admin      -> admin:3003
-/api/chat       -> chat:3004
-/               -> frontend:80
+[SCREENSHOT 36 — Frontend Kubernetes deployment]
 ```
-
-📸 **Screenshot – Step 48: Ingress configuration**
-
-> Add screenshot here.
 
 ---
 
-## 49. Apply Ingress
+# PART 11 — Helm Deployment
 
-```cmd
-kubectl apply -f k8s/ingress.yaml -n streamingapp
-```
+## Step 68 — Create Helm Chart
 
-📸 **Screenshot – Step 49: Ingress applied**
-
-> Add screenshot here.
-
----
-
-## 50. Verify Ingress
-
-```cmd
-kubectl get ingress -n streamingapp
-kubectl describe ingress streamingapp-ingress -n streamingapp
-```
-
-📸 **Screenshot – Step 50: Ingress verification**
-
-> Add screenshot here.
-
----
-
-## 51. Verify AWS Application Load Balancer
-
-Wait for the Ingress ADDRESS/hostname to be populated:
-
-```cmd
-kubectl get ingress streamingapp-ingress -n streamingapp -w
-```
-
-📸 **Screenshot – Step 51: ALB hostname**
-
-> Add screenshot here.
-
----
-
-## 52. Verify Frontend Through ALB
-
-Open the ALB URL in a browser.
-
-Example:
-
-```text
-http://<ALB-DNS-NAME>/
-```
-
-📸 **Screenshot – Step 52: StreamingApp frontend**
-
-> Add screenshot here.
-
----
-
-## 53. Verify Auth API
-
-```text
-http://<ALB-DNS-NAME>/api/auth
-```
-
-Use the application's supported authentication endpoint as defined by the service.
-
-📸 **Screenshot – Step 53: Auth API**
-
-> Add screenshot here.
-
----
-
-## 54. Verify Streaming API
-
-```text
-http://<ALB-DNS-NAME>/api/streaming
-```
-
-📸 **Screenshot – Step 54: Streaming API**
-
-> Add screenshot here.
-
----
-
-## 55. Verify Admin API
-
-```text
-http://<ALB-DNS-NAME>/api/admin
-```
-
-📸 **Screenshot – Step 55: Admin API**
-
-> Add screenshot here.
-
----
-
-## 56. Verify Chat API
-
-```text
-http://<ALB-DNS-NAME>/api/chat
-```
-
-📸 **Screenshot – Step 56: Chat API**
-
-> Add screenshot here.
-
----
-
-## 57. Verify Frontend API Configuration
-
-Confirm that the frontend does not still point to localhost for deployed API calls.
-
-Search the source:
-
-```cmd
-findstr /S /N /I "STREAMING_API_URL" frontend\*.js frontend\*.jsx frontend\*.ts frontend\*.tsx
-```
-
-The deployed configuration should use the ALB/API URL appropriate for the application.
-
-📸 **Screenshot – Step 57: Frontend API configuration**
-
-> Add screenshot here.
-
----
-
-# Helm Deployment
-
-## 58. Helm Chart Structure
-
-Recommended structure:
+Create the Helm chart:
 
 ```text
 helm/
@@ -824,427 +1157,737 @@ helm/
     ├── Chart.yaml
     ├── values.yaml
     └── templates/
+        ├── namespace.yaml
+        ├── configmap.yaml
+        ├── secret.yaml
+        ├── mongo.yaml
         ├── auth.yaml
-        ├── admin.yaml
         ├── streaming.yaml
+        ├── admin.yaml
         ├── chat.yaml
         ├── frontend.yaml
         └── ingress.yaml
 ```
 
-📸 **Screenshot – Step 58: Helm chart structure**
+Validate:
 
-> Add screenshot here.
-
----
-
-## 59. Chart.yaml
-
-Example:
-
-```yaml
-apiVersion: v2
-name: streamingapp
-description: StreamingApp Kubernetes deployment
-version: 0.1.0
-appVersion: "1.0"
-```
-
-📸 **Screenshot – Step 59: Chart.yaml**
-
-> Add screenshot here.
-
----
-
-## 60. values.yaml
-
-Centralize configurable values such as namespace, ECR registry, image repositories/tags, services, resources and ingress settings.
-
-Example base values:
-
-```yaml
-namespace: streamingapp
-
-imageRegistry: 508564775932.dkr.ecr.ap-south-1.amazonaws.com
-
-configMap:
-  name: streamingapp-config
-
-secret:
-  name: streamingapp-secret
-```
-
-📸 **Screenshot – Step 60: values.yaml**
-
-> Add screenshot here.
-
----
-
-## 61. Convert Kubernetes Manifests to Helm Templates
-
-Convert the working Kubernetes resources into parameterized Helm templates.
-
-Templates:
-
-```text
-helm/streamingapp/templates/auth.yaml
-helm/streamingapp/templates/admin.yaml
-helm/streamingapp/templates/streaming.yaml
-helm/streamingapp/templates/chat.yaml
-helm/streamingapp/templates/frontend.yaml
-helm/streamingapp/templates/ingress.yaml
-```
-
-Use expressions such as:
-
-```text
-{{ .Values.auth.image.repository }}
-{{ .Values.auth.image.tag }}
-{{ .Values.auth.service.port }}
-```
-
-📸 **Screenshot – Step 61: Helm templates**
-
-> Add screenshot here.
-
----
-
-## 62. Helm Lint
-
-```cmd
+```powershell
 helm lint helm/streamingapp
 ```
 
-The chart should report a successful lint result.
+### Screenshot
 
-📸 **Screenshot – Step 62: helm lint**
-
-> Add screenshot here.
+```text
+[SCREENSHOT 37 — Helm lint]
+```
 
 ---
 
-## 63. Render Helm Templates
+# PART 12 — Ingress and AWS Load Balancer
 
-```cmd
-helm template streamingapp helm/streamingapp > rendered.yaml
+## Step 69 — Configure AWS Load Balancer and Application Verification
+
+Install/configure the AWS Load Balancer Controller and deploy the Kubernetes Ingress.
+
+The application routing should provide access to:
+
+```text
+/
+    → Frontend
+
+/api/auth
+    → Auth Service
+
+/api/streaming
+    → Streaming Service
+
+/api/admin
+    → Admin Service
+
+/api/chat
+    → Chat Service
+
+/socket.io
+    → Chat Service
 ```
 
-Inspect:
+Check:
 
-```cmd
-findstr /N /I "streamingapp-ingress api/auth api/streaming api/admin api/chat frontend" rendered.yaml
+```powershell
+kubectl get ingress -n streamingapp
 ```
 
-📸 **Screenshot – Step 63: Rendered Helm YAML**
+Obtain the ALB address:
 
-> Add screenshot here.
+```powershell
+kubectl get ingress -n streamingapp
+```
+
+Open the resulting ALB address in a browser.
+
+### Screenshot
+
+```text
+[SCREENSHOT 38 — Kubernetes Ingress]
+```
+
+### Screenshot
+
+```text
+[SCREENSHOT 39 — AWS Application Load Balancer]
+```
+
+### Screenshot
+
+```text
+[SCREENSHOT 40 — StreamingApp through ALB]
+```
 
 ---
 
-## 64. Install or Upgrade Helm Release
+# PART 13 — Scaling and Rolling Updates
 
-```cmd
-helm upgrade --install streamingapp helm/streamingapp --namespace streamingapp --create-namespace
+## Step 70 — Validate Scaling, Rolling Updates and Final Deployment
+
+### Check all pods
+
+```powershell
+kubectl get pods -n streamingapp -o wide
+```
+
+### Check deployments
+
+```powershell
+kubectl get deployments -n streamingapp
+```
+
+### Check services
+
+```powershell
+kubectl get services -n streamingapp
+```
+
+### Scale a deployment
+
+Example:
+
+```powershell
+kubectl scale deployment auth-service `
+  --replicas=3 `
+  -n streamingapp
 ```
 
 Verify:
 
-```cmd
-helm list -n streamingapp
+```powershell
+kubectl get pods -n streamingapp
 ```
 
-📸 **Screenshot – Step 64: Helm deployment**
+### Screenshot
 
-> Add screenshot here.
+```text
+[SCREENSHOT 41 — Kubernetes horizontal scaling]
+```
 
 ---
 
-## 65. Verify Helm-Managed Resources
+## Rolling Update
 
-```cmd
-helm status streamingapp -n streamingapp
-kubectl get all -n streamingapp
-kubectl get ingress -n streamingapp
+Update the container image:
+
+```powershell
+kubectl set image deployment/auth-service `
+  auth-service=<ECR_IMAGE>:2 `
+  -n streamingapp
 ```
 
-If an existing resource was created by `kubectl` and Helm reports ownership conflicts, remove only the conflicting application resource and rerun the Helm deployment. Do not delete the namespace unnecessarily.
+Monitor:
 
-📸 **Screenshot – Step 65: Helm-managed resources**
+```powershell
+kubectl rollout status deployment/auth-service -n streamingapp
+```
 
-> Add screenshot here.
+### Screenshot
+
+```text
+[SCREENSHOT 42 — Rolling update]
+```
 
 ---
 
-## 66. Final Application Verification
+## Rollout History
+
+```powershell
+kubectl rollout history deployment/auth-service -n streamingapp
+```
+
+### Screenshot
+
+```text
+[SCREENSHOT 43 — Rollout history]
+```
+
+---
+
+## Rollback
+
+If required:
+
+```powershell
+kubectl rollout undo deployment/auth-service -n streamingapp
+```
+
+Verify:
+
+```powershell
+kubectl rollout status deployment/auth-service -n streamingapp
+```
+
+### Screenshot
+
+```text
+[SCREENSHOT 44 — Kubernetes rollback]
+```
+
+---
+
+# Final Kubernetes Validation
 
 Run:
 
-```cmd
-kubectl get pods -n streamingapp
-kubectl get svc -n streamingapp
-kubectl get ingress -n streamingapp
-helm status streamingapp -n streamingapp
+```powershell
+kubectl get all -n streamingapp
 ```
 
-Then verify the frontend and API routes through the ALB URL.
-
-📸 **Screenshot – Step 66: Final application verification**
-
-> Add screenshot here.
-
----
-
-## 67. Final Evidence and Submission
-
-Capture final evidence showing:
-
-1. EKS cluster/nodes
-2. ECR repositories and images
-3. Kubernetes pods
-4. Kubernetes services
-5. Helm release
-6. Ingress and ALB DNS
-7. Frontend application running through ALB
-8. API verification
-9. Helm chart structure
-10. `helm lint` success
-11. `helm template` output
-12. Final `helm status`
-
-📸 **Screenshot – Step 67: Final submission evidence**
-
-> Add screenshot here.
-
----
-
-# Architecture Overview
+Expected components include:
 
 ```text
-                         Internet
-                            |
-                            v
-                 AWS Application Load Balancer
-                            |
-                       Kubernetes Ingress
-                            |
-          +-----------------+------------------+
-          |                 |                  |
-          v                 v                  v
-      Frontend          Backend APIs       Backend APIs
-        :80          auth/streaming       admin/chat
-                         :3001-3004
-                            |
-                            v
-                       Application DB
+Pods
+Deployments
+ReplicaSets
+Services
 ```
 
----
-
-# Helm Architecture
+### Screenshot
 
 ```text
-helm/streamingapp/
-|
-+-- Chart.yaml
-+-- values.yaml
-|
-+-- templates/
-    +-- auth.yaml
-    +-- admin.yaml
-    +-- streaming.yaml
-    +-- chat.yaml
-    +-- frontend.yaml
-    +-- ingress.yaml
-```
-
-Helm provides repeatable installation and allows environment-specific configuration through `values.yaml`.
-
----
-
-# ECR Images
-
-| Service | Repository | Tag |
-|---|---|---|
-| Auth | `streamingapp/auth-service` | `1` |
-| Admin | `streamingapp/admin-service` | `1` |
-| Streaming | `streamingapp/streaming-service` | `1` |
-| Chat | `streamingapp/chat-service` | `1` |
-| Frontend | `streamingapp/frontend` | `1` |
-
----
-
-# Useful Verification Commands
-
-```cmd
-aws sts get-caller-identity
-kubectl get nodes
-kubectl get pods -n streamingapp
-kubectl get svc -n streamingapp
-kubectl get ingress -n streamingapp
-helm list -n streamingapp
-helm status streamingapp -n streamingapp
+[SCREENSHOT 45 — Final kubectl get all]
 ```
 
 ---
 
-# Common Troubleshooting
+# Final Application Test
 
-## AWS ExpiredToken
+Verify the application through the ALB URL.
 
-If you see:
+Test:
 
 ```text
-ExpiredToken: The security token included in the request is expired
+Frontend
+Authentication
+Streaming
+Administration
+Chat
+Socket.IO
 ```
 
-Refresh the AWS credentials/session and verify:
-
-```cmd
-aws sts get-caller-identity
-```
-
-Then refresh kubeconfig:
-
-```cmd
-aws eks update-kubeconfig --region ap-south-1 --name <EKS-CLUSTER-NAME>
-```
-
-## Kubernetes Unauthorized
-
-```cmd
-aws sts get-caller-identity
-aws eks update-kubeconfig --region ap-south-1 --name <EKS-CLUSTER-NAME>
-kubectl get nodes
-```
-
-## Helm Resource Ownership Conflict
-
-Typical error:
+### Screenshot
 
 ```text
-exists and cannot be imported into the current release
+[SCREENSHOT 46 — Final application test]
 ```
 
-Inspect the conflicting resource and, when appropriate, delete only that old resource before reinstalling/upgrading the Helm release.
+---
+
+# Docker Images
+
+Backend images stored in Amazon ECR:
+
+```text
+streamingapp/auth-service
+streamingapp/streaming-service
+streamingapp/admin-service
+streamingapp/chat-service
+```
+
+Frontend image can be built and pushed after the final ALB/API URLs are known.
+
+---
+
+# Kubernetes Resources
+
+The final Kubernetes environment contains:
+
+```text
+EKS Cluster
+│
+├── Namespace: streamingapp
+│
+├── MongoDB
+│
+├── Auth Service
+│
+├── Streaming Service
+│
+├── Admin Service
+│
+├── Chat Service
+│
+├── Frontend
+│
+├── Services
+│
+├── ConfigMaps
+│
+├── Secrets
+│
+└── Ingress
+```
+
+---
+
+# Health Checks
+
+| Service | Health Endpoint |
+|---|---|
+| Auth | `/health` |
+| Streaming | `/api/health` |
+| Chat | `/api/health` |
+
+Health checks are used to verify application availability and support Kubernetes container lifecycle management.
+
+---
+
+# Scaling Demonstration
+
+The project demonstrates Kubernetes scaling using:
+
+```powershell
+kubectl scale deployment <deployment-name> --replicas=<number> -n streamingapp
+```
 
 Example:
 
-```cmd
-kubectl delete ingress streamingapp-ingress -n streamingapp
-helm upgrade --install streamingapp helm/streamingapp -n streamingapp --create-namespace
+```powershell
+kubectl scale deployment auth-service --replicas=3 -n streamingapp
 ```
 
-## Pods Not Starting
+Verify:
 
-```cmd
+```powershell
 kubectl get pods -n streamingapp
-kubectl describe pod <POD-NAME> -n streamingapp
-kubectl logs <POD-NAME> -n streamingapp
-kubectl get events -n streamingapp --sort-by=.lastTimestamp
 ```
-
-## ImagePullBackOff
-
-Check:
-
-- ECR repository name
-- Image tag
-- ECR region
-- Node IAM permissions
-- Image existence in ECR
-
-## Ingress Has No Address
-
-```cmd
-kubectl describe ingress streamingapp-ingress -n streamingapp
-kubectl get events -n streamingapp --sort-by=.lastTimestamp
-```
-
-Also verify that the AWS Load Balancer Controller is installed and healthy.
 
 ---
 
-# Screenshot Naming Convention
+# Rolling Deployment Demonstration
 
-Recommended names:
+The application supports rolling image updates using:
+
+```powershell
+kubectl set image deployment/<deployment> <container>=<new-image> -n streamingapp
+```
+
+Deployment progress:
+
+```powershell
+kubectl rollout status deployment/<deployment> -n streamingapp
+```
+
+---
+
+# Useful Kubernetes Commands
+
+## Pods
+
+```powershell
+kubectl get pods -n streamingapp
+```
+
+## Deployments
+
+```powershell
+kubectl get deployments -n streamingapp
+```
+
+## Services
+
+```powershell
+kubectl get svc -n streamingapp
+```
+
+## Ingress
+
+```powershell
+kubectl get ingress -n streamingapp
+```
+
+## Events
+
+```powershell
+kubectl get events -n streamingapp --sort-by=.lastTimestamp
+```
+
+## Pod Logs
+
+```powershell
+kubectl logs <pod-name> -n streamingapp
+```
+
+## Pod Details
+
+```powershell
+kubectl describe pod <pod-name> -n streamingapp
+```
+
+## Deployment Details
+
+```powershell
+kubectl describe deployment <deployment-name> -n streamingapp
+```
+
+---
+
+# Helm Commands
+
+## Lint
+
+```powershell
+helm lint helm/streamingapp
+```
+
+## Template
+
+```powershell
+helm template streamingapp helm/streamingapp
+```
+
+## Install
+
+```powershell
+helm install streamingapp helm/streamingapp `
+  -n streamingapp `
+  --create-namespace
+```
+
+## Upgrade
+
+```powershell
+helm upgrade streamingapp helm/streamingapp `
+  -n streamingapp
+```
+
+## Status
+
+```powershell
+helm status streamingapp -n streamingapp
+```
+
+## List Releases
+
+```powershell
+helm list -n streamingapp
+```
+
+---
+
+# Troubleshooting
+
+## Check Pod Status
+
+```powershell
+kubectl get pods -n streamingapp
+```
+
+If a pod is not running:
+
+```powershell
+kubectl describe pod <pod-name> -n streamingapp
+```
+
+---
+
+## Check Logs
+
+```powershell
+kubectl logs <pod-name> -n streamingapp
+```
+
+For a previous crashed container:
+
+```powershell
+kubectl logs <pod-name> -n streamingapp --previous
+```
+
+---
+
+## Check Events
+
+```powershell
+kubectl get events -n streamingapp --sort-by=.lastTimestamp
+```
+
+---
+
+## Check ECR Image
+
+```powershell
+aws ecr describe-images `
+  --repository-name streamingapp/auth-service `
+  --region ap-south-1
+```
+
+---
+
+# Cost Optimization
+
+This project is designed for demonstration and academic evaluation.
+
+AWS resources should not be left running unnecessarily.
+
+Recommended workflow:
 
 ```text
-screenshots/
-├── step-04-aws-region.png
-├── step-05-aws-cli.png
-├── step-13-docker-build.png
-├── step-17-ecr-repositories.png
-├── step-29-ecr-images.png
-├── step-32-eks-cluster.png
-├── step-34-eks-nodes.png
-├── step-43-pods.png
-├── step-44-services.png
-├── step-50-ingress.png
-├── step-51-alb.png
-├── step-52-frontend.png
-├── step-58-helm-structure.png
-├── step-62-helm-lint.png
-├── step-63-helm-template.png
-├── step-64-helm-deployment.png
-├── step-66-final-verification.png
-└── step-67-submission.png
+Create
+  ↓
+Deploy
+  ↓
+Test
+  ↓
+Take Screenshots
+  ↓
+Record Demonstration
+  ↓
+Delete Resources
 ```
 
-Replace each placeholder with Markdown such as:
+Avoid leaving the following resources running continuously:
 
-```markdown
-![Step 32 – EKS cluster creation](screenshots/step-32-eks-cluster.png)
+- EKS cluster
+- EC2 Jenkins instance
+- Application Load Balancer
+- NAT Gateway
+- Unused ECR images
+- Unused EBS volumes
+
+The EKS configuration intentionally disables NAT Gateway usage:
+
+```yaml
+vpc:
+  nat:
+    gateway: Disable
 ```
 
 ---
 
-# Final Submission Checklist
+# Final Demonstration Checklist
 
-- [ ] Docker images build successfully
-- [ ] Application runs locally
-- [ ] ECR repositories created
-- [ ] All five images pushed to ECR
+## Source Code
+
+- [ ] GitHub repository cloned
+- [ ] DevOps branch created
+- [ ] Application verified locally
+
+## Docker
+
+- [ ] Docker installed
+- [ ] Docker Compose working
+- [ ] Five application images built
+- [ ] Containers tested locally
+
+## ECR
+
+- [ ] Auth repository created
+- [ ] Streaming repository created
+- [ ] Admin repository created
+- [ ] Chat repository created
+- [ ] Backend images pushed
+
+## Jenkins
+
+- [ ] Jenkins EC2 created
+- [ ] Jenkins installed
+- [ ] AWS credentials configured
+- [ ] Pipeline created
+- [ ] Pipeline executed successfully
+
+## EKS
+
 - [ ] EKS cluster created
-- [ ] kubeconfig configured
-- [ ] Kubernetes nodes are Ready
-- [ ] Namespace `streamingapp` exists
-- [ ] All application pods are Running/Ready
-- [ ] Services are available
-- [ ] ALB Ingress is configured
-- [ ] ALB DNS is available
-- [ ] Frontend opens through ALB
-- [ ] Backend routes are verified
+- [ ] Worker nodes Ready
+- [ ] Namespace created
+- [ ] Kubernetes resources deployed
+
+## Kubernetes
+
+- [ ] MongoDB deployed
+- [ ] Auth deployed
+- [ ] Streaming deployed
+- [ ] Admin deployed
+- [ ] Chat deployed
+- [ ] Frontend deployed
+- [ ] Services created
+- [ ] ConfigMap created
+- [ ] Secrets configured
+- [ ] Health probes configured
+
+## Helm
+
 - [ ] Helm chart created
-- [ ] `helm lint` succeeds
-- [ ] `helm template` succeeds
-- [ ] Helm release is installed
-- [ ] Final screenshots added
-- [ ] README submitted with the assignment
+- [ ] Helm lint successful
+- [ ] Helm template verified
+- [ ] Helm deployment successful
+
+## Ingress
+
+- [ ] AWS Load Balancer Controller configured
+- [ ] Ingress created
+- [ ] ALB generated
+- [ ] Frontend accessible
+- [ ] API routes verified
+- [ ] Socket.IO verified
+
+## Scaling
+
+- [ ] Replicas increased
+- [ ] Pods verified
+- [ ] Rolling update tested
+- [ ] Rollback tested
 
 ---
 
-# Cleanup
+# Screenshot Index
 
-When the assignment/demo is complete, clean up AWS resources to avoid unnecessary charges.
+The following placeholders can be replaced with actual images after completing the assignment.
 
-For Helm:
-
-```cmd
-helm uninstall streamingapp -n streamingapp
+```text
+01  Git version
+02  Docker version
+03  Docker Compose version
+04  AWS CLI version
+05  AWS STS identity
+06  Git repository and branch
+07  Project structure
+08  Docker Compose configuration
+09  Docker Compose startup
+10  Docker Compose services
+11  Running Docker containers
+12  Auth health check
+13  Streaming health check
+14  Chat health check
+15  Frontend
+16  Docker images
+17  ECR repositories
+18  ECR login
+19  Auth ECR push
+20  Streaming ECR push
+21  Admin ECR push
+22  Chat ECR push
+23  ECR image verification
+24  Jenkins EC2
+25  Jenkins service
+26  Jenkins dashboard
+27  Jenkins credentials
+28  Jenkins pipeline
+29  Successful Jenkins build
+30  EKS dry-run
+31  EKS cluster
+32  EKS nodes
+33  Kubernetes manifests
+34  MongoDB pod
+35  Backend deployments
+36  Frontend deployment
+37  Helm lint
+38  Kubernetes Ingress
+39  AWS ALB
+40  Application through ALB
+41  Kubernetes scaling
+42  Rolling update
+43  Rollout history
+44  Rollback
+45  Final kubectl get all
+46  Final application test
 ```
-
-Delete the EKS cluster only when you are completely finished:
-
-```cmd
-eksctl delete cluster --name <EKS-CLUSTER-NAME> --region ap-south-1
-```
-
-ECR repositories can also be removed when no longer required.
 
 ---
 
 # Conclusion
 
-The StreamingApp assignment demonstrates a complete container-to-cloud orchestration workflow: application containers are built with Docker, stored in Amazon ECR, deployed to Amazon EKS with Kubernetes, exposed through an AWS Application Load Balancer, and finally packaged into a reusable Helm chart.
+The StreamingApp project demonstrates an end-to-end container orchestration and deployment workflow using Docker, Amazon ECR, Jenkins, Kubernetes, Amazon EKS, Helm and AWS Load Balancing.
 
-The screenshot placeholders in this README are intentionally left empty so the actual evidence from the completed environment can be added later.
+The implementation provides practical experience with:
+
+- Microservice containerization
+- Container registries
+- CI/CD pipelines
+- Kubernetes orchestration
+- Service discovery
+- Health checks
+- Configuration management
+- Secrets
+- Load balancing
+- Ingress
+- Horizontal scaling
+- Rolling deployments
+- Rollbacks
+- Cloud deployment
+- DevOps automation
+
+The project is implemented in the AWS Mumbai region (`ap-south-1`) with a focus on keeping infrastructure suitable for a short-lived academic demonstration.
+
+---
+
+# Author
+
+**Vinjith NV**
+
+DevOps / Full Stack Developer
+
+Technologies:
+
+```text
+PHP
+Python
+Symfony
+Laravel
+React
+Angular
+Vue
+Docker
+Kubernetes
+AWS
+Azure
+Jenkins
+CI/CD
+GenAI
+```
+
+---
+
+# Project Repository
+
+```text
+https://github.com/UnpredictablePrashant/StreamingApp
+```
+
+---
+
+## Assignment Status
+
+```text
+PART 1  - Environment Preparation       ✓
+PART 2  - Repository Setup              ✓
+PART 3  - Application Configuration     ✓
+PART 4  - Docker Compose                ✓
+PART 5  - Docker Images                 ✓
+PART 6  - Amazon ECR                    ✓
+PART 7  - ECR Image Push                ✓
+PART 8  - Jenkins CI/CD                 ✓
+PART 9  - Amazon EKS                    ✓
+PART 10 - Kubernetes Deployment        ✓
+PART 11 - Helm                          ✓
+PART 12 - Ingress / ALB                 ✓
+PART 13 - Scaling / Rolling Updates     ✓
+```
+
+> **Note:** Screenshots should be added to the corresponding placeholders after each stage is successfully completed.
