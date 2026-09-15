@@ -61,6 +61,15 @@ spec:
                   name: {{ .Values.secret.name }}
                   key: MONGO_PASSWORD
 
+            - name: CLIENT_URLS
+              value: {{ .Values.chat.clientUrls | quote }}
+
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secret.name }}
+                  key: JWT_SECRET
+
           resources:
             requests:
               cpu: {{ .Values.chat.resources.requests.cpu | quote }}

@@ -50,6 +50,14 @@ spec:
                 port:
                   number: {{ .Values.ingress.routes.chat.servicePort }}
 
+          - path: {{ .Values.ingress.routes.socketio.path }}
+            pathType: {{ .Values.ingress.routes.socketio.pathType }}
+            backend:
+              service:
+                name: {{ .Values.ingress.routes.socketio.serviceName }}
+                port:
+                  number: {{ .Values.ingress.routes.socketio.servicePort }}
+
           - path: {{ .Values.ingress.routes.frontend.path }}
             pathType: {{ .Values.ingress.routes.frontend.pathType }}
             backend:

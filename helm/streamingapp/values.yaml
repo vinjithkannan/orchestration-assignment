@@ -71,6 +71,12 @@ ingress:
       pathType: Prefix
       serviceName: chat
       servicePort: 3004
+    
+    socketio:
+      path: /socket.io
+      pathType: Prefix
+      serviceName: chat
+      servicePort: 3004
 
     frontend:
       path: /
@@ -143,7 +149,9 @@ auth:
 
   containerPort: 3001
 
-  clientUrls: "http://k8s-streamin-streamin-ca676dcfa1-1872173439.ap-south-1.elb.amazonaws.com"
+  clientUrls: "http://localhost:3000,http://k8s-streamin-streamin-ca676dcfa1-235819436.ap-south-1.elb.amazonaws.com"
+
+  mongoUri: "mongodb://mongodb:27017/streamingapp"
 
   service:
     type: ClusterIP
@@ -182,6 +190,12 @@ admin:
 
   containerPort: 3003
 
+  s3Bucket: "streamingapp-508564775932-30527"
+
+  awsRegion: "ap-south-1"
+
+  clientUrls: "http://localhost:3000,http://k8s-streamin-streamin-ca676dcfa1-235819436.ap-south-1.elb.amazonaws.com"
+
   mongoUri: "mongodb://mongodb:27017/streamingapp"
 
   service:
@@ -201,6 +215,10 @@ admin:
 streaming:
   name: streaming
   replicaCount: 1
+
+  clientUrls: "http://localhost:3000,http://k8s-streamin-streamin-ca676dcfa1-235819436.ap-south-1.elb.amazonaws.com"
+
+  streamingPublicUrl: ""
 
   image:
     repository: streamingapp/streaming-service
@@ -228,6 +246,8 @@ streaming:
 chat:
   name: chat
   replicaCount: 1
+
+  clientUrls: "http://localhost:3000,http://k8s-streamin-streamin-ca676dcfa1-235819436.ap-south-1.elb.amazonaws.com"
 
   image:
     repository: streamingapp/chat-service

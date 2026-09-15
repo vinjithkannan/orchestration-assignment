@@ -601,6 +601,13 @@ pipeline {
 
         success {
 
+            sh '''
+                aws sns publish \
+                --topic-arn arn:aws:sns:$AWS_REGION:$AWS_ACCOUNT_ID:streamingapp-deployment-success \
+                --subject "StreamingApp Deployment SUCCESS" \
+                --message "Deployment SUCCESS: ${BUILD_URL}" \
+                --region $AWS_REGION
+            '''
             echo """
             ==========================================
             STREAMINGAPP CI/CD SUCCESS
@@ -625,6 +632,14 @@ pipeline {
 
 
         failure {
+
+            sh '''
+                aws sns publish \
+                --topic-arn arn:aws:sns:$AWS_REGION:$AWS_ACCOUNT_ID:streamingapp-deployment-failure \
+                --subject "StreamingApp Deployment FAILED" \
+                --message "Deployment FAILED: ${BUILD_URL}" \
+                --region $AWS_REGION
+            '''
 
             echo """
             ==========================================

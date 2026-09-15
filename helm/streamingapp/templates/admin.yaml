@@ -61,6 +61,21 @@ spec:
                   name: {{ .Values.secret.name }}
                   key: MONGO_PASSWORD
 
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secret.name }}
+                  key: JWT_SECRET
+
+            - name: CLIENT_URLS
+              value: {{ .Values.admin.clientUrls | quote }}
+
+            - name: AWS_S3_BUCKET
+              value: {{ .Values.admin.s3Bucket | quote }}
+
+            - name: AWS_REGION
+              value: {{ .Values.admin.awsRegion | quote }}
+
           resources:
             requests:
               cpu: {{ .Values.admin.resources.requests.cpu | quote }}

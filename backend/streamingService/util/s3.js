@@ -25,8 +25,13 @@ const buildPublicUrl = (key) => {
     return key;
   }
 
-  const base = process.env.STREAMING_PUBLIC_URL?.replace(/\/$/, '') || 'http://localhost:3002';
-  return `${base}/api/streaming/thumbnails/${encodeURI(key)}`;
+  const base = process.env.STREAMING_PUBLIC_URL?.replace(/\/$/, '') || '';
+
+  const normalizedKey = key
+    .replace(/^\/+/, '')
+    .replace(/^thumbnails\//i, '');
+
+  return `${base}/api/streaming/thumbnails/${encodeURI(normalizedKey)}`;
 };
 
 const buildStreamUrl = (videoId) => {

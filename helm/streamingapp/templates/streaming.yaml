@@ -59,7 +59,13 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.secret.name }}
-                  key: MONGO_PASSWORD
+                  key: MONGO_PASSWORD        
+
+            - name: CLIENT_URLS
+              value: {{ .Values.streaming.clientUrls | quote }}
+                        
+            - name: STREAMING_PUBLIC_URL
+              value: {{ .Values.streaming.streamingPublicUrl | quote }}
 
           resources:
             requests:

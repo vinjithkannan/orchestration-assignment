@@ -27,6 +27,9 @@ spec:
                 configMapKeyRef:
                   name: {{ .Values.configMap.name }}
                   key: NODE_ENV
+                  
+            - name: MONGO_URI
+              value: {{ .Values.auth.mongoUri | quote }}
 
             - name: MONGO_HOST
               valueFrom:
