@@ -191,9 +191,7 @@ git branch
 
 ### Screenshot
 
-```text
 ![Git repository and branch](screenshots/git-branch.png)
-```
 
 ---
 
@@ -432,9 +430,7 @@ streamingapp/frontend
 
 ### Screenshot
 
-```text
 ![Docker images](screenshots/docker-images.png)
-```
 
 ---
 
@@ -647,9 +643,7 @@ foreach ($repo in $repos) {
 
 ### Screenshot
 
-```text
 ![All backend images in ECR](screenshots/ecr-repositories.png)
-```
 
 ---
 
@@ -672,9 +666,7 @@ The Jenkins environment is responsible for orchestrating the CI/CD workflow, inc
 
 ### Screenshot
 
-```text
 ![Shared Jenkins dashboard](screenshots/jenkins-dashboard.png)
-```
 
 ---
 
@@ -688,9 +680,7 @@ Verify that the pipeline has access to the required AWS/ECR credentials and any 
 
 ### Screenshot
 
-```text
 ![Shared Jenkins credentials/configuration](screenshots/jenkins-creds.png)
-```
 
 ---
 
@@ -728,9 +718,7 @@ If the Jenkins job is already provided, use the existing job rather than creatin
 
 ### Screenshot
 
-```text
 ![Jenkins pipeline](screenshots/jenkins-cicd-config.png)
-```
 
 ---
 
@@ -744,9 +732,7 @@ If the pipeline includes Kubernetes/Helm deployment, verify that the deployment 
 
 ### Screenshot
 
-```text
 ![Successful Jenkins pipeline](screenshots/jenkins-ci-cd.png)
-```
 
 ---
 
@@ -816,9 +802,7 @@ This creates the EKS control plane and worker nodes.
 
 ### Screenshot
 
-```text
 ![EKS cluster creation](screenshots/create-cluster.png)
-```
 
 ---
 
@@ -846,9 +830,7 @@ STATUS   Ready
 
 ### Screenshot
 
-```text
 ![EKS worker nodes](screenshots/k8s-nodes.png)
-```
 
 ---
 
@@ -945,10 +927,8 @@ kubectl get svc -n streamingapp
 
 ### Screenshot
 
-```text
 ![Kubernetes deployment](screenshots/k8s-commands.png)
 ![Kubernetes deployment](screenshots/k8s-commands-1.png)
-```
 
 ---
 
@@ -1027,21 +1007,7 @@ Open the resulting ALB address in a browser.
 
 ### Screenshot
 
-```text
-[SCREENSHOT 38 — Kubernetes Ingress]
-```
-
-### Screenshot
-
-```text
-[SCREENSHOT 39 — AWS Application Load Balancer]
-```
-
-### Screenshot
-
-```text
-[SCREENSHOT 40 — StreamingApp through ALB]
-```
+![ALB address in a browser](screenshots/dns-browser.png)
 
 ---
 
@@ -1159,7 +1125,6 @@ Socket.IO
 
 ### Screenshot
 
-```text
 ![Final application test]
 
 ![Application Dashboard](screenshots/dns-browser.png)
@@ -1171,7 +1136,6 @@ Socket.IO
 ![Application Admin](screenshots/admin-manage-videos.png)
 
 ![Application Chat](screenshots/chat-window.png)
-```
 
 ---
 
@@ -1496,9 +1460,7 @@ kubectl logs <pod-name> -n streamingapp
 
 ### Screenshot
 
-```text
 ![CloudWatch dashboard / EKS monitoring](screenshots/cloudwatch-logs.png)
-```
 
 ---
 
@@ -1520,9 +1482,7 @@ Then review CloudWatch metrics to observe the infrastructure during the scaling 
 
 ### Screenshot
 
-```text
 ![EKS / EC2 node CloudWatch metrics](screenshots/cloudwatch-metrics.png)
-```
 
 ---
 
@@ -1582,10 +1542,7 @@ Verify that the subscribed endpoint receives the notification.
 
 ### Screenshot
 
-```text
 ![SNS](screenshots/lambda_sns.png)
-![SNS Notification](screenshots/sns-notification.png)
-```
 
 ---
 
@@ -1627,9 +1584,7 @@ The SNS integration is **optional bonus functionality** and is not required for 
 
 ### Screenshot
 
-```text
-[SCREENSHOT 48 — Jenkins/SNS ChatOps notification]
-```
+![SNS Notification](screenshots/sns-notification.png)
 
 # Cost Optimization
 
