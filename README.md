@@ -29,7 +29,9 @@ The implementation covers:
 - AWS Application Load Balancer
 - Kubernetes Ingress
 - Application verification
+- CloudWatch monitoring and metrics
 - Monitoring and logging
+- SNS-based ChatOps notifications (bonus)
 - Cost-conscious AWS deployment
 
 ---
@@ -115,13 +117,6 @@ Expected:
 ```text
 git version <version>
 ```
-
-### Screenshot
-
-```text
-[SCREENSHOT 01 — Git version]
-```
-
 ---
 
 ## Step 2 — Verify Docker
@@ -129,13 +124,6 @@ git version <version>
 ```powershell
 docker --version
 ```
-
-### Screenshot
-
-```text
-[SCREENSHOT 02 — Docker version]
-```
-
 ---
 
 ## Step 3 — Verify Docker Compose
@@ -143,13 +131,6 @@ docker --version
 ```powershell
 docker compose version
 ```
-
-### Screenshot
-
-```text
-[SCREENSHOT 03 — Docker Compose version]
-```
-
 ---
 
 ## Step 4 — Verify AWS CLI
@@ -157,13 +138,6 @@ docker compose version
 ```powershell
 aws --version
 ```
-
-### Screenshot
-
-```text
-[SCREENSHOT 04 — AWS CLI version]
-```
-
 ---
 
 ## Step 5 — Verify AWS Identity
@@ -171,15 +145,6 @@ aws --version
 ```powershell
 aws sts get-caller-identity
 ```
-
-This confirms that the AWS CLI is authenticated.
-
-### Screenshot
-
-```text
-[SCREENSHOT 05 — AWS STS identity]
-```
-
 ---
 
 # PART 2 — Clone the Application
@@ -192,15 +157,13 @@ cd \
 mkdir Projects
 cd Projects
 ```
-
 ---
 
 ## Step 7 — Clone Repository
 
 ```powershell
-git clone https://github.com/UnpredictablePrashant/StreamingApp.git
+git clone https://github.com/vinjithkannan/orchestration-assignment.git
 ```
-
 ---
 
 ## Step 8 — Enter Project Directory
@@ -216,14 +179,9 @@ cd StreamingApp
 ```powershell
 git status
 ```
-
 ---
 
-## Step 10 — Create Development Branch
-
-```powershell
-git checkout -b devops-assignment
-```
+## Step 10 — Development Branch
 
 Verify:
 
@@ -234,7 +192,7 @@ git branch
 ### Screenshot
 
 ```text
-[SCREENSHOT 06 — Git repository and branch]
+![Git repository and branch](screenshots/git-branch.png)
 ```
 
 ---
@@ -258,13 +216,6 @@ StreamingApp/
 ├── .gitignore
 └── README.md
 ```
-
-### Screenshot
-
-```text
-[SCREENSHOT 07 — Project directory structure]
-```
-
 ---
 
 ## Step 12 — Create Environment File
@@ -282,12 +233,6 @@ docker compose config
 ```
 
 The configuration should be parsed successfully without YAML errors.
-
-### Screenshot
-
-```text
-[SCREENSHOT 08 — Docker Compose configuration]
-```
 
 ---
 
@@ -308,12 +253,6 @@ This builds and starts:
 - Chat Service
 - Frontend
 
-### Screenshot
-
-```text
-[SCREENSHOT 09 — Docker Compose startup]
-```
-
 ---
 
 ## Step 15 — Open Second Terminal
@@ -331,13 +270,6 @@ cd C:\Projects\StreamingApp
 ```powershell
 docker compose ps
 ```
-
-### Screenshot
-
-```text
-[SCREENSHOT 10 — Docker Compose services]
-```
-
 ---
 
 ## Step 17 — Check Running Containers
@@ -345,13 +277,6 @@ docker compose ps
 ```powershell
 docker ps
 ```
-
-### Screenshot
-
-```text
-[SCREENSHOT 11 — Running Docker containers]
-```
-
 ---
 
 ## Step 18 — Test Auth Service
@@ -362,24 +287,12 @@ curl http://localhost:3001/health
 
 Expected response should indicate that the service is healthy.
 
-### Screenshot
-
-```text
-[SCREENSHOT 12 — Auth health check]
-```
-
 ---
 
 ## Step 19 — Test Streaming Service
 
 ```powershell
 curl http://localhost:3002/api/health
-```
-
-### Screenshot
-
-```text
-[SCREENSHOT 13 — Streaming health check]
 ```
 
 ---
@@ -389,13 +302,6 @@ curl http://localhost:3002/api/health
 ```powershell
 curl http://localhost:3004/api/health
 ```
-
-### Screenshot
-
-```text
-[SCREENSHOT 14 — Chat health check]
-```
-
 ---
 
 ## Step 21 — Open Frontend
@@ -405,13 +311,6 @@ Open:
 ```text
 http://localhost:3000
 ```
-
-### Screenshot
-
-```text
-[SCREENSHOT 15 — StreamingApp frontend]
-```
-
 ---
 
 ## Step 22 — Check Application Logs
@@ -419,7 +318,6 @@ http://localhost:3000
 ```powershell
 docker compose logs
 ```
-
 ---
 
 ## Step 23 — Check Auth Logs
@@ -427,7 +325,6 @@ docker compose logs
 ```powershell
 docker compose logs authService
 ```
-
 ---
 
 ## Step 24 — Check Streaming Logs
@@ -536,7 +433,7 @@ streamingapp/frontend
 ### Screenshot
 
 ```text
-[SCREENSHOT 16 — Five Docker images]
+![Docker images](screenshots/docker-images.png)
 ```
 
 ---
@@ -637,12 +534,6 @@ streamingapp/admin-service
 streamingapp/chat-service
 ```
 
-### Screenshot
-
-```text
-[SCREENSHOT 17 — ECR repositories]
-```
-
 ---
 
 # PART 7 — Push Images to ECR
@@ -658,12 +549,6 @@ Expected:
 
 ```text
 Login Succeeded
-```
-
-### Screenshot
-
-```text
-[SCREENSHOT 18 — ECR Docker login]
 ```
 
 ---
@@ -683,13 +568,6 @@ docker tag streamingapp/auth-service:local `
 docker push `
   "$env:ECR_REGISTRY/streamingapp/auth-service:1"
 ```
-
-### Screenshot
-
-```text
-[SCREENSHOT 19 — Auth image pushed to ECR]
-```
-
 ---
 
 ## Step 44 — Tag Streaming Image
@@ -706,12 +584,6 @@ docker tag streamingapp/streaming-service:local `
 ```powershell
 docker push `
   "$env:ECR_REGISTRY/streamingapp/streaming-service:1"
-```
-
-### Screenshot
-
-```text
-[SCREENSHOT 20 — Streaming image pushed]
 ```
 
 ---
@@ -732,12 +604,6 @@ docker push `
   "$env:ECR_REGISTRY/streamingapp/admin-service:1"
 ```
 
-### Screenshot
-
-```text
-[SCREENSHOT 21 — Admin image pushed]
-```
-
 ---
 
 ## Step 48 — Tag Chat Image
@@ -754,12 +620,6 @@ docker tag streamingapp/chat-service:local `
 ```powershell
 docker push `
   "$env:ECR_REGISTRY/streamingapp/chat-service:1"
-```
-
-### Screenshot
-
-```text
-[SCREENSHOT 22 — Chat image pushed]
 ```
 
 ---
@@ -788,133 +648,104 @@ foreach ($repo in $repos) {
 ### Screenshot
 
 ```text
-[SCREENSHOT 23 — All backend images in ECR]
+![All backend images in ECR](screenshots/ecr-repositories.png)
 ```
 
 ---
 
 # PART 8 — Jenkins CI/CD
 
-## Step 51 — Prepare Jenkins EC2
+## Step 51 — Use the Shared Jenkins Environment
 
-Create an EC2 instance for Jenkins.
+Jenkins is provided as a shared tool for this assignment. **A separate Jenkins EC2 instance does not need to be created, and Jenkins does not need to be installed or configured from scratch.**
 
-Recommended demonstration configuration:
+Use the shared Jenkins URL and the credentials provided for the assignment.
 
-```text
-Instance type: t3.small
-OS: Amazon Linux
-Region: ap-south-1
-```
+The Jenkins environment is responsible for orchestrating the CI/CD workflow, including:
 
-Jenkins should have permission to:
-
-- Build Docker images
-- Authenticate with ECR
-- Push images to ECR
+- Checking out the GitHub repository
+- Building the application Docker images
+- Running the required tests/validation
+- Authenticating with Amazon ECR
+- Pushing images to Amazon ECR
+- Triggering the Kubernetes/Helm deployment workflow as configured by the project
 
 ### Screenshot
 
 ```text
-[SCREENSHOT 24 — Jenkins EC2 instance]
+![Shared Jenkins dashboard](screenshots/jenkins-dashboard.png)
 ```
 
 ---
 
-## Step 52 — Install Jenkins
+## Step 52 — Configure Jenkins Credentials
 
-Install Java and Jenkins on the Jenkins EC2 instance.
+Use the credentials already provided/configured for the shared Jenkins environment.
 
-Verify:
+Verify that the pipeline has access to the required AWS/ECR credentials and any Kubernetes/Helm deployment credentials required by the pipeline.
 
-```bash
-java --version
-```
-
-and:
-
-```bash
-sudo systemctl status jenkins
-```
+**Do not create a new Jenkins EC2 instance or install Jenkins.**
 
 ### Screenshot
 
 ```text
-[SCREENSHOT 25 — Jenkins service]
+![Shared Jenkins credentials/configuration](screenshots/jenkins-creds.png)
 ```
 
 ---
 
-## Step 53 — Open Jenkins
+## Step 53 — Create/Use the Jenkins Pipeline
 
-Access Jenkins through the configured Jenkins URL.
-
-Example:
+Use the Jenkins pipeline associated with the assignment repository:
 
 ```text
-http://<JENKINS_PUBLIC_IP>:8080
+https://github.com/vinjithkannan/orchestration-assignment
 ```
 
-### Screenshot
+The pipeline should orchestrate the following flow:
 
 ```text
-[SCREENSHOT 26 — Jenkins dashboard]
-```
-
----
-
-## Step 54 — Configure Jenkins Credentials
-
-Configure the AWS credentials required for ECR operations.
-
-Use least-privilege IAM permissions where possible.
-
-### Screenshot
-
-```text
-[SCREENSHOT 27 — Jenkins credentials]
-```
-
----
-
-## Step 55 — Create Jenkins Pipeline
-
-Create a Pipeline job for StreamingApp.
-
-Pipeline stages should include:
-
-```text
+GitHub Repository
+       ↓
+Jenkins Shared Environment
+       ↓
 Checkout
-   ↓
-Build
-   ↓
-Test
-   ↓
+       ↓
+Build / Test
+       ↓
 Docker Build
-   ↓
+       ↓
 ECR Login
-   ↓
-Push Images
+       ↓
+Push Images to ECR
+       ↓
+Helm / Kubernetes Deployment
+       ↓
+EKS
 ```
+
+If the Jenkins job is already provided, use the existing job rather than creating another Jenkins server.
 
 ### Screenshot
 
 ```text
-[SCREENSHOT 28 — Jenkins pipeline stages]
+![Jenkins pipeline](screenshots/jenkins-cicd-config.png)
 ```
 
 ---
 
-## Step 56 — Run Jenkins Build
+## Step 54 — Run Jenkins Pipeline
 
-Trigger a Jenkins build.
+Trigger the Jenkins pipeline from the shared Jenkins environment.
 
-Verify that all stages complete successfully.
+Verify that the required stages complete successfully and that the expected Docker images are available in Amazon ECR.
+
+If the pipeline includes Kubernetes/Helm deployment, verify that the deployment reaches the EKS cluster successfully.
 
 ### Screenshot
 
 ```text
-[SCREENSHOT 29 — Successful Jenkins build]
+![Successful Jenkins pipeline](screenshots/jenkins-ci-cd.png)
 ```
 
 ---
@@ -973,12 +804,6 @@ eksctl create cluster -f k8s/cluster.yaml --dry-run
 
 The configuration should pass validation.
 
-### Screenshot
-
-```text
-[SCREENSHOT 30 — EKS dry-run validation]
-```
-
 ---
 
 ## Step 60 — Create EKS Cluster
@@ -992,7 +817,7 @@ This creates the EKS control plane and worker nodes.
 ### Screenshot
 
 ```text
-[SCREENSHOT 31 — EKS cluster creation]
+![EKS cluster creation](screenshots/create-cluster.png)
 ```
 
 ---
@@ -1022,7 +847,7 @@ STATUS   Ready
 ### Screenshot
 
 ```text
-[SCREENSHOT 32 — EKS worker nodes]
+![EKS worker nodes](screenshots/k8s-nodes.png)
 ```
 
 ---
@@ -1059,12 +884,6 @@ k8s/
 └── ingress.yaml
 ```
 
-### Screenshot
-
-```text
-[SCREENSHOT 33 — Kubernetes manifest files]
-```
-
 ---
 
 ## Step 65 — Deploy MongoDB
@@ -1081,13 +900,6 @@ Verify:
 ```powershell
 kubectl get pods -n streamingapp
 ```
-
-### Screenshot
-
-```text
-[SCREENSHOT 34 — MongoDB pod]
-```
-
 ---
 
 ## Step 66 — Deploy Backend Services
@@ -1113,12 +925,6 @@ kubectl get deployments -n streamingapp
 kubectl get services -n streamingapp
 ```
 
-### Screenshot
-
-```text
-[SCREENSHOT 35 — Backend Kubernetes deployments]
-```
-
 ---
 
 ## Step 67 — Deploy Frontend
@@ -1140,7 +946,8 @@ kubectl get svc -n streamingapp
 ### Screenshot
 
 ```text
-[SCREENSHOT 36 — Frontend Kubernetes deployment]
+![Kubernetes deployment](screenshots/k8s-commands.png)
+![Kubernetes deployment](screenshots/k8s-commands-1.png)
 ```
 
 ---
@@ -1174,13 +981,6 @@ Validate:
 ```powershell
 helm lint helm/streamingapp
 ```
-
-### Screenshot
-
-```text
-[SCREENSHOT 37 — Helm lint]
-```
-
 ---
 
 # PART 12 — Ingress and AWS Load Balancer
@@ -1283,12 +1083,6 @@ Verify:
 kubectl get pods -n streamingapp
 ```
 
-### Screenshot
-
-```text
-[SCREENSHOT 41 — Kubernetes horizontal scaling]
-```
-
 ---
 
 ## Rolling Update
@@ -1306,27 +1100,12 @@ Monitor:
 ```powershell
 kubectl rollout status deployment/auth-service -n streamingapp
 ```
-
-### Screenshot
-
-```text
-[SCREENSHOT 42 — Rolling update]
-```
-
 ---
 
 ## Rollout History
 
 ```powershell
 kubectl rollout history deployment/auth-service -n streamingapp
-```
-
-### Screenshot
-
-```text
-[SCREENSHOT 43 — Rollout history]
-```
-
 ---
 
 ## Rollback
@@ -1342,13 +1121,6 @@ Verify:
 ```powershell
 kubectl rollout status deployment/auth-service -n streamingapp
 ```
-
-### Screenshot
-
-```text
-[SCREENSHOT 44 — Kubernetes rollback]
-```
-
 ---
 
 # Final Kubernetes Validation
@@ -1366,12 +1138,6 @@ Pods
 Deployments
 ReplicaSets
 Services
-```
-
-### Screenshot
-
-```text
-[SCREENSHOT 45 — Final kubectl get all]
 ```
 
 ---
@@ -1394,7 +1160,17 @@ Socket.IO
 ### Screenshot
 
 ```text
-[SCREENSHOT 46 — Final application test]
+![Final application test]
+
+![Application Dashboard](screenshots/dns-browser.png)
+
+![Application Registration](screenshots/registration.png)
+
+![Application Login](screenshots/loggedin.png)
+
+![Application Admin](screenshots/admin-manage-videos.png)
+
+![Application Chat](screenshots/chat-window.png)
 ```
 
 ---
@@ -1639,6 +1415,222 @@ aws ecr describe-images `
 
 ---
 
+
+# PART 14 — CloudWatch Monitoring and Metrics
+
+## Step 71 — CloudWatch Monitoring Overview
+
+Amazon CloudWatch can be used to monitor the AWS infrastructure supporting the StreamingApp deployment.
+
+The monitoring scope includes:
+
+- EKS cluster and worker-node monitoring
+- CPU and memory utilization
+- Application and Kubernetes health indicators
+- ALB request and response metrics
+- CloudWatch logs where enabled
+- Operational visibility during deployment and testing
+
+For this academic demonstration, monitoring should be enabled only for the resources required for the screenshots/demo.
+---
+
+## Step 72 — Check EKS and Node Metrics
+
+Open the AWS CloudWatch console and review the available metrics for the EKS environment and worker nodes.
+
+Useful metrics include:
+
+```text
+CPUUtilization
+NetworkIn
+NetworkOut
+DiskReadBytes
+DiskWriteBytes
+```
+
+Review the metrics during application deployment and load/scaling demonstrations.
+
+---
+
+## Step 73 — Monitor Application Load Balancer Metrics
+
+Review the Application Load Balancer metrics in CloudWatch.
+
+Useful ALB metrics include:
+
+```text
+RequestCount
+TargetResponseTime
+HTTPCode_Target_2XX_Count
+HTTPCode_Target_4XX_Count
+HTTPCode_Target_5XX_Count
+HealthyHostCount
+UnHealthyHostCount
+```
+
+These metrics help demonstrate application traffic, response time and target health.
+
+---
+
+## Step 74 — CloudWatch Logs
+
+Where CloudWatch logging is enabled, review the available log groups and streams.
+
+Typical checks include:
+
+```text
+Log groups
+Log streams
+Recent application/platform logs
+Error messages
+Timestamped events
+```
+
+Use the logs together with Kubernetes commands when troubleshooting:
+
+```powershell
+kubectl get pods -n streamingapp
+kubectl get events -n streamingapp --sort-by=.lastTimestamp
+kubectl logs <pod-name> -n streamingapp
+```
+
+### Screenshot
+
+```text
+![CloudWatch dashboard / EKS monitoring](screenshots/cloudwatch-logs.png)
+```
+
+---
+
+## Step 75 — Metrics During Scaling
+
+Demonstrate the relationship between Kubernetes scaling and infrastructure metrics.
+
+Example:
+
+```powershell
+kubectl scale deployment auth-service `
+  --replicas=3 `
+  -n streamingapp
+
+kubectl get pods -n streamingapp
+```
+
+Then review CloudWatch metrics to observe the infrastructure during the scaling activity.
+
+### Screenshot
+
+```text
+![EKS / EC2 node CloudWatch metrics](screenshots/cloudwatch-metrics.png)
+```
+
+---
+
+# BONUS — SNS ChatOps Notifications
+
+## Bonus Step 76 — Create an SNS Topic
+
+Amazon Simple Notification Service (SNS) can be used as a bonus integration for deployment and pipeline notifications.
+
+Create an SNS topic:
+
+```powershell
+aws sns create-topic `
+  --name streamingapp-pipeline-events `
+  --region ap-south-1
+```
+
+Save the returned TopicArn.
+
+---
+
+## Bonus Step 77 — Subscribe to SNS Notifications
+
+For an email notification:
+
+```powershell
+aws sns subscribe `
+  --topic-arn <SNS_TOPIC_ARN> `
+  --protocol email `
+  --notification-endpoint <YOUR_EMAIL> `
+  --region ap-south-1
+```
+
+Confirm the subscription from the email received from AWS SNS.
+
+---
+
+## Bonus Step 78 — Publish a Test Notification
+
+Test the SNS topic:
+
+```powershell
+aws sns publish `
+  --topic-arn <SNS_TOPIC_ARN> `
+  --subject "StreamingApp Pipeline Notification" `
+  --message "StreamingApp Jenkins pipeline completed successfully." `
+  --region ap-south-1
+```
+
+Expected:
+
+```text
+MessageId
+```
+
+Verify that the subscribed endpoint receives the notification.
+
+### Screenshot
+
+```text
+![SNS](screenshots/lambda_sns.png)
+![SNS Notification](screenshots/sns-notification.png)
+```
+
+---
+
+## Bonus Step 79 — Jenkins / ChatOps Integration
+
+For the bonus ChatOps workflow, SNS can be connected to pipeline or deployment events.
+
+Example flow:
+
+```text
+Jenkins
+   |
+   +---- Pipeline Success
+   |
+   +---- Pipeline Failure
+   |
+   v
+Amazon SNS
+   |
+   +---- Telegram Group Notification
+   |
+   +---- Optional Lambda / HTTPS integration
+   |
+   v
+Notification Channel
+```
+
+Possible events:
+
+```text
+Pipeline Success
+Pipeline Failure
+Deployment Success
+Deployment Failure
+Rollback
+```
+
+The SNS integration is **optional bonus functionality** and is not required for the core StreamingApp deployment.
+
+### Screenshot
+
+```text
+[SCREENSHOT 48 — Jenkins/SNS ChatOps notification]
+```
+
 # Cost Optimization
 
 This project is designed for demonstration and academic evaluation.
@@ -1664,7 +1656,7 @@ Delete Resources
 Avoid leaving the following resources running continuously:
 
 - EKS cluster
-- EC2 Jenkins instance
+- Unnecessary Jenkins infrastructure (Jenkins is provided as a shared tool)
 - Application Load Balancer
 - NAT Gateway
 - Unused ECR images
@@ -1676,137 +1668,6 @@ The EKS configuration intentionally disables NAT Gateway usage:
 vpc:
   nat:
     gateway: Disable
-```
-
----
-
-# Final Demonstration Checklist
-
-## Source Code
-
-- [ ] GitHub repository cloned
-- [ ] DevOps branch created
-- [ ] Application verified locally
-
-## Docker
-
-- [ ] Docker installed
-- [ ] Docker Compose working
-- [ ] Five application images built
-- [ ] Containers tested locally
-
-## ECR
-
-- [ ] Auth repository created
-- [ ] Streaming repository created
-- [ ] Admin repository created
-- [ ] Chat repository created
-- [ ] Backend images pushed
-
-## Jenkins
-
-- [ ] Jenkins EC2 created
-- [ ] Jenkins installed
-- [ ] AWS credentials configured
-- [ ] Pipeline created
-- [ ] Pipeline executed successfully
-
-## EKS
-
-- [ ] EKS cluster created
-- [ ] Worker nodes Ready
-- [ ] Namespace created
-- [ ] Kubernetes resources deployed
-
-## Kubernetes
-
-- [ ] MongoDB deployed
-- [ ] Auth deployed
-- [ ] Streaming deployed
-- [ ] Admin deployed
-- [ ] Chat deployed
-- [ ] Frontend deployed
-- [ ] Services created
-- [ ] ConfigMap created
-- [ ] Secrets configured
-- [ ] Health probes configured
-
-## Helm
-
-- [ ] Helm chart created
-- [ ] Helm lint successful
-- [ ] Helm template verified
-- [ ] Helm deployment successful
-
-## Ingress
-
-- [ ] AWS Load Balancer Controller configured
-- [ ] Ingress created
-- [ ] ALB generated
-- [ ] Frontend accessible
-- [ ] API routes verified
-- [ ] Socket.IO verified
-
-## Scaling
-
-- [ ] Replicas increased
-- [ ] Pods verified
-- [ ] Rolling update tested
-- [ ] Rollback tested
-
----
-
-# Screenshot Index
-
-The following placeholders can be replaced with actual images after completing the assignment.
-
-```text
-01  Git version
-02  Docker version
-03  Docker Compose version
-04  AWS CLI version
-05  AWS STS identity
-06  Git repository and branch
-07  Project structure
-08  Docker Compose configuration
-09  Docker Compose startup
-10  Docker Compose services
-11  Running Docker containers
-12  Auth health check
-13  Streaming health check
-14  Chat health check
-15  Frontend
-16  Docker images
-17  ECR repositories
-18  ECR login
-19  Auth ECR push
-20  Streaming ECR push
-21  Admin ECR push
-22  Chat ECR push
-23  ECR image verification
-24  Jenkins EC2
-25  Jenkins service
-26  Jenkins dashboard
-27  Jenkins credentials
-28  Jenkins pipeline
-29  Successful Jenkins build
-30  EKS dry-run
-31  EKS cluster
-32  EKS nodes
-33  Kubernetes manifests
-34  MongoDB pod
-35  Backend deployments
-36  Frontend deployment
-37  Helm lint
-38  Kubernetes Ingress
-39  AWS ALB
-40  Application through ALB
-41  Kubernetes scaling
-42  Rolling update
-43  Rollout history
-44  Rollback
-45  Final kubectl get all
-46  Final application test
 ```
 
 ---
@@ -1832,62 +1693,7 @@ The implementation provides practical experience with:
 - Rollbacks
 - Cloud deployment
 - DevOps automation
+- CloudWatch monitoring and metrics
+- SNS notification integration (bonus)
 
 The project is implemented in the AWS Mumbai region (`ap-south-1`) with a focus on keeping infrastructure suitable for a short-lived academic demonstration.
-
----
-
-# Author
-
-**Vinjith NV**
-
-DevOps / Full Stack Developer
-
-Technologies:
-
-```text
-PHP
-Python
-Symfony
-Laravel
-React
-Angular
-Vue
-Docker
-Kubernetes
-AWS
-Azure
-Jenkins
-CI/CD
-GenAI
-```
-
----
-
-# Project Repository
-
-```text
-https://github.com/UnpredictablePrashant/StreamingApp
-```
-
----
-
-## Assignment Status
-
-```text
-PART 1  - Environment Preparation       ✓
-PART 2  - Repository Setup              ✓
-PART 3  - Application Configuration     ✓
-PART 4  - Docker Compose                ✓
-PART 5  - Docker Images                 ✓
-PART 6  - Amazon ECR                    ✓
-PART 7  - ECR Image Push                ✓
-PART 8  - Jenkins CI/CD                 ✓
-PART 9  - Amazon EKS                    ✓
-PART 10 - Kubernetes Deployment        ✓
-PART 11 - Helm                          ✓
-PART 12 - Ingress / ALB                 ✓
-PART 13 - Scaling / Rolling Updates     ✓
-```
-
-> **Note:** Screenshots should be added to the corresponding placeholders after each stage is successfully completed.
